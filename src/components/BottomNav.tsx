@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Home, PlusCircle, MessageSquare, User, ShieldCheck } from "lucide-react";
+import { Home, PlusCircle, MessageSquare, User, ShieldCheck, ClipboardList } from "lucide-react";
 import { UserSession } from "@/types";
 
 export default function BottomNav() {
@@ -19,9 +19,8 @@ export default function BottomNav() {
       .catch(() => {});
   }, [pathname]);
 
-  // Không hiển thị ở trang đăng tin nếu bàn phím có thể che
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-amber-900/10 shadow-lg md:hidden">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-stone-200 shadow-lg md:hidden">
       <div className="grid grid-cols-5 h-16 max-w-lg mx-auto items-center px-1">
         {/* Trang chủ */}
         <Link
@@ -31,7 +30,7 @@ export default function BottomNav() {
           }`}
         >
           <Home className="w-5 h-5 mb-0.5" />
-          <span className="text-[11px] leading-tight">Trang chủ</span>
+          <span className="text-[10px] leading-tight">Trang chủ</span>
         </Link>
 
         {/* Tin nhắn Chat */}
@@ -42,18 +41,18 @@ export default function BottomNav() {
           }`}
         >
           <MessageSquare className="w-5 h-5 mb-0.5" />
-          <span className="text-[11px] leading-tight">Tin nhắn</span>
+          <span className="text-[10px] leading-tight">Tin nhắn</span>
         </Link>
 
         {/* Nút Đăng Tin Nổi Bật Ở Giữa */}
         <div className="flex justify-center -mt-5">
           <Link
             href="/dang-tin"
-            className="w-13 h-13 rounded-full bg-gradient-to-tr from-amber-700 to-amber-900 text-white flex flex-col items-center justify-center shadow-lg hover:scale-105 active:scale-95 transition-transform border-4 border-white"
+            className="w-12 h-12 rounded-full bg-gradient-to-tr from-amber-700 to-amber-900 text-white flex flex-col items-center justify-center shadow-md hover:scale-105 active:scale-95 transition-transform border-4 border-white"
             title="Đăng tin bán bò"
           >
-            <PlusCircle className="w-6 h-6" />
-            <span className="text-[9px] font-bold mt-0.5">Đăng tin</span>
+            <PlusCircle className="w-5 h-5" />
+            <span className="text-[8px] font-bold mt-0.5">Đăng tin</span>
           </Link>
         </div>
 
@@ -69,9 +68,9 @@ export default function BottomNav() {
           {user?.role === "ADMIN" ? (
             <ShieldCheck className="w-5 h-5 mb-0.5 text-amber-700" />
           ) : (
-            <span className="text-xl leading-none mb-0.5">📋</span>
+            <ClipboardList className="w-5 h-5 mb-0.5" />
           )}
-          <span className="text-[11px] leading-tight truncate">
+          <span className="text-[10px] leading-tight truncate">
             {user?.role === "ADMIN" ? "Quản trị" : "Tin của tôi"}
           </span>
         </Link>
@@ -84,7 +83,7 @@ export default function BottomNav() {
           }`}
         >
           <User className="w-5 h-5 mb-0.5" />
-          <span className="text-[11px] leading-tight truncate">
+          <span className="text-[10px] leading-tight truncate">
             {user ? (user.fullName || "Tài khoản") : "Đăng nhập"}
           </span>
         </Link>

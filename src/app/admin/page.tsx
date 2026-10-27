@@ -43,8 +43,8 @@ export default function AdminPage() {
   const [settings, setSettings] = useState<SiteSettingsMap>({
     site_name: "Bò Giống Miền Bắc",
     site_slogan: "Sàn Mua Bán Bò Giống & Bò Thịt Chất Lượng Cao",
-    hotline: "0988.888.888",
-    zalo_admin: "0988.888.888",
+    hotline: "0368.283.539",
+    zalo_admin: "0368.283.539",
     notice_banner: "Sàn Giao Dịch Bò Giống & Bò Thịt Uy Tín Miền Bắc • Kiểm duyệt an toàn",
   });
 
@@ -366,7 +366,7 @@ export default function AdminPage() {
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
               {pendingListings.map((item) => (
                 <div key={item.id} className="relative">
                   <ListingCard
@@ -398,7 +398,7 @@ export default function AdminPage() {
             <Search className="w-4 h-4 text-stone-400 absolute left-3.5 top-3.5" />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
             {filteredAllListings.map((item) => (
               <ListingCard
                 key={item.id}

@@ -15,6 +15,7 @@ import {
   ExternalLink,
   RefreshCw,
 } from "lucide-react";
+import CattleLogoIcon from "@/components/icons/CattleLogoIcon";
 
 function ChatInner() {
   const router = useRouter();
@@ -229,8 +230,8 @@ function ChatInner() {
                           className="w-full h-full object-cover"
                         />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-stone-400 text-sm">
-                          🐂
+                        <div className="w-full h-full flex items-center justify-center bg-stone-800 text-stone-400">
+                          <CattleLogoIcon className="w-5 h-5 text-amber-200" />
                         </div>
                       )}
                     </div>
@@ -289,8 +290,12 @@ function ChatInner() {
                     <ArrowLeft className="w-5 h-5" />
                   </button>
 
-                  <div className="w-10 h-10 rounded-full bg-amber-800 text-white flex items-center justify-center font-bold text-sm shrink-0">
-                    {partner?.fullName ? partner.fullName.charAt(0).toUpperCase() : "🐂"}
+                  <div className="w-9 h-9 rounded-full bg-amber-800 text-white flex items-center justify-center font-bold text-xs shrink-0">
+                    {partner?.fullName ? (
+                      partner.fullName.charAt(0).toUpperCase()
+                    ) : (
+                      <CattleLogoIcon className="w-4 h-4 text-amber-100" />
+                    )}
                   </div>
 
                   <div className="min-w-0">

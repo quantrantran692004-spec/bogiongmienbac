@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { setAuthCookie } from "@/lib/auth";
 import { UserRole } from "@/types";
+import bcrypt from "bcryptjs";
+
+export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
   try {
@@ -15,24 +18,54 @@ export async function POST(request: Request) {
 
     const phone = body.phone?.trim();
     if (!phone || !/^[0-9]{9,11}$/.test(phone)) {
-      return NextResponse.json({ error: "Số điện thoại không hợp lệ (cần 9-11 chữ số)" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Số điện thoại không hợp lệ (cần 9-11 chữ số)" },
+        { status: 400 }
+      );
     }
 
-    const adminPhone = process.env.ADMIN_PHONE || "0988888888";
-    const adminPassword = process.env.ADMIN_PASSWORD || "admin_change_this_password_123";
+    const adminPhone = process.env.ADMIN_PHONE || "0368283539";
+    const adminPasswordHash =
+      process.env.ADMIN_PASSWORD_HASH ||
+      "$2b$10$.pTGrYv2QDUKUyLkChI0jeOoIkGLxVOYR89hF9uD3G.GBAw6zIHN.";
 
     // 1. Luồng đăng nhập Quản trị viên
-    if (body.isAdmin) {
-      if (phone !== adminPhone || body.password !== adminPassword) {
-        return NextResponse.json({ error: "Thông tin xác thực Quản trị viên không chính xác" }, { status: 401 });
+    const isAttemptingAdmin = Boolean(body.isAdmin || body.password || phone === adminPhone);
+
+    if (isAttemptingAdmin) {
+      if (phone !== adminPhone) {
+        return NextResponse.json(
+          { error: "Số điện thoại không có quyền truy cập quản trị" },
+          { status: 403 }
+        );
+      }
+
+      if (!body.password) {
+        return NextResponse.json(
+          { error: "Vui lòng nhập mật khẩu quản trị" },
+          { status: 400 }
+        );
+      }
+
+      // So khớp mật khẩu băm bcrypt an toàn phía máy chủ
+      const isMatch = await bcrypt.compare(body.password, adminPasswordHash);
+      if (!isMatch) {
+        return NextResponse.json(
+          { error: "Mật khẩu quản trị viên không chính xác" },
+          { status: 401 }
+        );
       }
 
       const adminUser = await prisma.user.upsert({
         where: { phone: adminPhone },
-        update: { role: "ADMIN" },
+        update: {
+          role: "ADMIN",
+          fullName: "Quản Trị Viên Sàn Bò Giống",
+          zaloNumber: adminPhone,
+        },
         create: {
           phone: adminPhone,
-          fullName: "Ban Quản Trị Bò Giống Miền Bắc",
+          fullName: "Quản Trị Viên Sàn Bò Giống",
           role: "ADMIN",
           zaloNumber: adminPhone,
         },
@@ -57,7 +90,15 @@ export async function POST(request: Request) {
       });
     }
 
-    // 2. Luồng đăng nhập Người bán (Đơn giản bằng Số điện thoại)
+    // 2. Luồng đăng nhập Người bán (Đơn giản bằng Số điện thoại cho bà con)
+    // Ngăn chặn người thường chiếm SĐT admin nếu không nhập mật khẩu
+    if (phone === adminPhone) {
+      return NextResponse.json(
+        { error: "Đây là số điện thoại Quản trị viên, vui lòng chuyển sang tab Quản Trị Viên và nhập mật khẩu." },
+        { status: 403 }
+      );
+    }
+
     const sellerUser = await prisma.user.upsert({
       where: { phone },
       update: {
@@ -73,7 +114,10 @@ export async function POST(request: Request) {
     });
 
     if (sellerUser.status === "SUSPENDED") {
-      return NextResponse.json({ error: "Tài khoản này đang bị tạm khóa. Vui lòng liên hệ ban quản trị." }, { status: 403 });
+      return NextResponse.json(
+        { error: "Tài khoản này đang bị tạm khóa. Vui lòng liên hệ ban quản trị." },
+        { status: 403 }
+      );
     }
 
     await setAuthCookie({

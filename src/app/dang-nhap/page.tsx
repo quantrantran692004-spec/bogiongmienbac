@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Phone, Lock, User, ShieldCheck, ArrowRight, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Phone, Lock, User, ShieldCheck, ArrowRight, AlertCircle } from "lucide-react";
+import CattleLogoIcon from "@/components/icons/CattleLogoIcon";
 
 export default function DangNhapPage() {
   const router = useRouter();
@@ -45,7 +46,6 @@ export default function DangNhapPage() {
         throw new Error(data.error || "Đăng nhập thất bại");
       }
 
-      // Chuyển hướng về trang tài khoản người bán
       window.location.href = "/tai-khoan";
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Đã có lỗi xảy ra");
@@ -70,6 +70,7 @@ export default function DangNhapPage() {
         body: JSON.stringify({
           phone: adminPhone.trim(),
           password: adminPassword.trim(),
+          isAdmin: true,
         }),
       });
 
@@ -78,7 +79,6 @@ export default function DangNhapPage() {
         throw new Error(data.error || "Sai số điện thoại hoặc mật khẩu quản trị");
       }
 
-      // Chuyển hướng vào trang Admin
       window.location.href = "/admin";
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Đã có lỗi xảy ra");
@@ -88,33 +88,32 @@ export default function DangNhapPage() {
   };
 
   return (
-    <div className="max-w-md mx-auto px-4 py-10 sm:py-16">
-      {/* Khung đăng nhập */}
-      <div className="bg-white rounded-3xl border border-stone-200 shadow-md p-6 sm:p-8">
+    <div className="max-w-md mx-auto px-4 py-8 sm:py-14">
+      <div className="bg-white rounded-3xl border border-stone-200 shadow-sm p-6 sm:p-8">
         {/* Header */}
         <div className="text-center mb-6">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-700 to-amber-900 text-white flex items-center justify-center text-2xl mx-auto mb-3 shadow-md">
-            🐂
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-700 to-amber-900 text-white flex items-center justify-center mx-auto mb-3 shadow-xs">
+            <CattleLogoIcon className="w-6 h-6 text-amber-100" />
           </div>
-          <h1 className="text-xl sm:text-2xl font-extrabold text-stone-900">
+          <h1 className="text-xl sm:text-2xl font-black text-stone-900">
             Đăng Nhập Sàn Bò Giống
           </h1>
-          <p className="text-xs sm:text-sm text-stone-500 mt-1">
-            Quản lý tin bán bò, theo dõi khách hàng và trò chuyện trực tiếp
+          <p className="text-xs text-stone-500 mt-1">
+            Quản lý tin bán bò, theo dõi khách hàng và kết nối trực tiếp
           </p>
         </div>
 
         {/* Tab chuyển đổi Người Bán vs Quản Trị Viên */}
-        <div className="grid grid-cols-2 p-1 bg-stone-100 rounded-2xl mb-6">
+        <div className="grid grid-cols-2 p-1 bg-stone-100 rounded-xl mb-5">
           <button
             type="button"
             onClick={() => {
               setActiveTab("SELLER");
               setError(null);
             }}
-            className={`py-2 text-xs sm:text-sm font-bold rounded-xl transition-all ${
+            className={`py-2 text-xs sm:text-sm font-bold rounded-lg transition-all ${
               activeTab === "SELLER"
-                ? "bg-white text-stone-900 shadow-xs"
+                ? "bg-white text-stone-900 shadow-2xs"
                 : "text-stone-500 hover:text-stone-800"
             }`}
           >
@@ -126,9 +125,9 @@ export default function DangNhapPage() {
               setActiveTab("ADMIN");
               setError(null);
             }}
-            className={`py-2 text-xs sm:text-sm font-bold rounded-xl transition-all flex items-center justify-center space-x-1 ${
+            className={`py-2 text-xs sm:text-sm font-bold rounded-lg transition-all flex items-center justify-center space-x-1 ${
               activeTab === "ADMIN"
-                ? "bg-amber-800 text-white shadow-xs"
+                ? "bg-amber-800 text-white shadow-2xs"
                 : "text-stone-500 hover:text-stone-800"
             }`}
           >
@@ -139,18 +138,18 @@ export default function DangNhapPage() {
 
         {/* Báo lỗi nếu có */}
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-800 text-xs sm:text-sm p-3 rounded-xl flex items-center space-x-2 mb-4">
-            <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
+          <div className="bg-rose-50 border border-rose-200 text-rose-800 text-xs sm:text-sm p-3 rounded-xl flex items-center space-x-2 mb-4">
+            <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
             <span>{error}</span>
           </div>
         )}
 
-        {/* FORM 1: NGƯỜI BÁN (Đăng nhập đơn giản bằng SĐT) */}
+        {/* FORM 1: NGƯỜI BÁN */}
         {activeTab === "SELLER" && (
-          <form onSubmit={handleSellerLogin} className="space-y-4">
+          <form onSubmit={handleSellerLogin} className="space-y-3.5">
             <div>
               <label className="block text-xs font-semibold text-stone-700 mb-1">
-                Số điện thoại của bạn <span className="text-red-500">*</span>
+                Số điện thoại của bạn <span className="text-rose-500">*</span>
               </label>
               <div className="relative">
                 <input
@@ -158,8 +157,8 @@ export default function DangNhapPage() {
                   required
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  placeholder="VD: 0987654321"
-                  className="w-full pl-10 pr-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-sm font-semibold focus:outline-hidden focus:ring-2 focus:ring-amber-700/30 focus:border-amber-700"
+                  placeholder="VD: 0912345678"
+                  className="w-full pl-9 pr-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-sm font-semibold focus:outline-hidden focus:ring-2 focus:ring-amber-700/20 focus:border-amber-700"
                 />
                 <Phone className="w-4 h-4 text-stone-400 absolute left-3 top-3" />
               </div>
@@ -178,7 +177,7 @@ export default function DangNhapPage() {
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   placeholder="VD: Trại Bò Giống Ba Vì"
-                  className="w-full pl-10 pr-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-sm focus:outline-hidden focus:ring-2 focus:ring-amber-700/30 focus:border-amber-700"
+                  className="w-full pl-9 pr-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-sm focus:outline-hidden focus:ring-2 focus:ring-amber-700/20 focus:border-amber-700"
                 />
                 <User className="w-4 h-4 text-stone-400 absolute left-3 top-3" />
               </div>
@@ -192,15 +191,15 @@ export default function DangNhapPage() {
                 type="tel"
                 value={zaloNumber}
                 onChange={(e) => setZaloNumber(e.target.value)}
-                placeholder="VD: 0987654321"
-                className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-sm focus:outline-hidden focus:ring-2 focus:ring-amber-700/30 focus:border-amber-700"
+                placeholder="VD: 0912345678"
+                className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-sm focus:outline-hidden focus:ring-2 focus:ring-amber-700/20 focus:border-amber-700"
               />
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 bg-amber-800 hover:bg-amber-900 active:bg-amber-950 text-white font-bold text-sm rounded-xl shadow-xs transition-colors flex items-center justify-center space-x-1.5 disabled:opacity-50"
+              className="w-full py-2.5 bg-amber-800 hover:bg-amber-900 active:bg-amber-950 text-white font-bold text-sm rounded-xl shadow-xs transition-colors flex items-center justify-center space-x-1.5 disabled:opacity-50 mt-2"
             >
               <span>{loading ? "Đang xử lý..." : "Tiếp tục / Đăng nhập ngay"}</span>
               <ArrowRight className="w-4 h-4" />
@@ -208,12 +207,12 @@ export default function DangNhapPage() {
           </form>
         )}
 
-        {/* FORM 2: QUẢN TRỊ VIÊN (Bảo mật cao với mật khẩu) */}
+        {/* FORM 2: QUẢN TRỊ VIÊN */}
         {activeTab === "ADMIN" && (
-          <form onSubmit={handleAdminLogin} className="space-y-4">
+          <form onSubmit={handleAdminLogin} className="space-y-3.5">
             <div>
               <label className="block text-xs font-semibold text-stone-700 mb-1">
-                Số điện thoại Quản Trị Viên <span className="text-red-500">*</span>
+                Số điện thoại Quản Trị Viên <span className="text-rose-500">*</span>
               </label>
               <div className="relative">
                 <input
@@ -221,8 +220,8 @@ export default function DangNhapPage() {
                   required
                   value={adminPhone}
                   onChange={(e) => setAdminPhone(e.target.value)}
-                  placeholder="0988888888"
-                  className="w-full pl-10 pr-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-sm font-semibold focus:outline-hidden focus:ring-2 focus:ring-amber-700/30 focus:border-amber-700"
+                  placeholder="0368283539"
+                  className="w-full pl-9 pr-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-sm font-semibold focus:outline-hidden focus:ring-2 focus:ring-amber-700/20 focus:border-amber-700"
                 />
                 <ShieldCheck className="w-4 h-4 text-amber-700 absolute left-3 top-3" />
               </div>
@@ -230,7 +229,7 @@ export default function DangNhapPage() {
 
             <div>
               <label className="block text-xs font-semibold text-stone-700 mb-1">
-                Mật khẩu Quản Trị Viên <span className="text-red-500">*</span>
+                Mật khẩu Quản Trị Viên <span className="text-rose-500">*</span>
               </label>
               <div className="relative">
                 <input
@@ -239,7 +238,7 @@ export default function DangNhapPage() {
                   value={adminPassword}
                   onChange={(e) => setAdminPassword(e.target.value)}
                   placeholder="Nhập mật khẩu quản trị"
-                  className="w-full pl-10 pr-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-sm focus:outline-hidden focus:ring-2 focus:ring-amber-700/30 focus:border-amber-700"
+                  className="w-full pl-9 pr-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-sm focus:outline-hidden focus:ring-2 focus:ring-amber-700/20 focus:border-amber-700"
                 />
                 <Lock className="w-4 h-4 text-stone-400 absolute left-3 top-3" />
               </div>
@@ -248,7 +247,7 @@ export default function DangNhapPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 bg-stone-900 hover:bg-black active:bg-stone-950 text-white font-bold text-sm rounded-xl shadow-xs transition-colors flex items-center justify-center space-x-1.5 disabled:opacity-50"
+              className="w-full py-2.5 bg-stone-900 hover:bg-black active:bg-stone-950 text-white font-bold text-sm rounded-xl shadow-xs transition-colors flex items-center justify-center space-x-1.5 disabled:opacity-50 mt-2"
             >
               <span>{loading ? "Đang xác thực..." : "Đăng nhập Bảng Quản Trị"}</span>
               <ShieldCheck className="w-4 h-4" />

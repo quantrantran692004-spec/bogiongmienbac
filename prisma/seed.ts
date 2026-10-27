@@ -6,17 +6,17 @@ async function main() {
   console.log("🌱 Bắt đầu khởi tạo dữ liệu mẫu cho Sàn Bò Giống Miền Bắc...");
 
   // 1. Khởi tạo tài khoản Quản trị viên chính duy nhất (Single Super Admin)
-  const adminPhone = process.env.ADMIN_PHONE || "0988888888";
+  const adminPhone = process.env.ADMIN_PHONE || "0368283539";
   const admin = await prisma.user.upsert({
     where: { phone: adminPhone },
     update: {
-      fullName: "Ban Quản Trị Bò Giống Miền Bắc",
+      fullName: "Quản Trị Viên Sàn Bò Giống",
       role: Role.ADMIN,
       zaloNumber: adminPhone,
     },
     create: {
       phone: adminPhone,
-      fullName: "Ban Quản Trị Bò Giống Miền Bắc",
+      fullName: "Quản Trị Viên Sàn Bò Giống",
       role: Role.ADMIN,
       zaloNumber: adminPhone,
     },
@@ -50,8 +50,8 @@ async function main() {
   const settings = [
     { key: "site_name", value: "Bò Giống Miền Bắc" },
     { key: "site_slogan", value: "Sàn Giao Dịch Bò Giống & Bò Thịt Uy Tín Số 1 Miền Bắc" },
-    { key: "hotline", value: "0988888888" },
-    { key: "zalo_admin", value: "0988888888" },
+    { key: "hotline", value: "0368283539" },
+    { key: "zalo_admin", value: "0368283539" },
     { key: "notice_banner", value: "Chào mừng quý bà con và trang trại đến với Sàn Bò Giống Miền Bắc! Mọi tin đăng đều được kiểm duyệt kỹ càng." },
   ];
 

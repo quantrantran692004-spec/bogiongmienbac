@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ListingItem, ListingFilterParams } from "@/types";
 import ListingCard from "@/components/ListingCard";
 import ListingFilterBar from "@/components/ListingFilterBar";
-import { PlusCircle, Sparkles, AlertCircle, RefreshCw } from "lucide-react";
+import { PlusCircle, ShieldCheck, AlertCircle, RefreshCw, CheckCircle2 } from "lucide-react";
 
 export default function HomePage() {
   const [listings, setListings] = useState<ListingItem[]>([]);
@@ -48,65 +48,63 @@ export default function HomePage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6">
-      {/* Banner Giới thiệu Nổi Bật Sàn Bò Giống */}
-      <div className="bg-gradient-to-r from-amber-900 via-amber-800 to-amber-950 text-white rounded-3xl p-5 sm:p-8 mb-6 shadow-md relative overflow-hidden">
-        {/* Hình họa trang trí tinh tế */}
-        <div className="absolute -right-10 -bottom-10 text-9xl opacity-15 select-none pointer-events-none">
-          🐂
-        </div>
+    <div className="max-w-6xl mx-auto px-3 sm:px-6 py-4 sm:py-6">
+      {/* Banner Giới thiệu Tinh Gọn — Không chiếm nhiều diện tích, màu sắc thanh lịch */}
+      <div className="bg-gradient-to-r from-stone-900 via-amber-950 to-stone-900 text-white rounded-2xl p-5 sm:p-6 mb-5 shadow-xs border border-stone-800">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="max-w-2xl">
+            <div className="inline-flex items-center space-x-1.5 bg-amber-500/15 text-amber-300 text-xs font-semibold px-2.5 py-0.5 rounded-md mb-2 border border-amber-500/20">
+              <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
+              <span>Sàn Giao Dịch Bò Giống & Bò Thịt Miền Bắc</span>
+            </div>
 
-        <div className="relative z-10 max-w-2xl">
-          <div className="inline-flex items-center space-x-1.5 bg-amber-700/60 text-amber-200 text-xs font-semibold px-3 py-1 rounded-full mb-3 backdrop-blur-xs">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>Sàn giao dịch bò giống lớn nhất miền Bắc</span>
+            <h1 className="text-xl sm:text-2xl font-black tracking-tight text-white mb-1.5">
+              Mua Bán Bò Giống, Bò Thịt Trực Tiếp Từ Trại
+            </h1>
+
+            <p className="text-stone-300 text-xs sm:text-sm leading-relaxed">
+              Kết nối trực tiếp hộ chăn nuôi và trang trại Ba Vì, Vĩnh Phúc, Bắc Giang, Phú Thọ.
+              Hình ảnh thực tế không cắt cúp, giá minh bạch, kiểm duyệt an toàn trước khi công khai.
+            </p>
           </div>
 
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight mb-2 sm:mb-3 leading-tight">
-            Mua Bán Bò Giống & Bò Thịt Chất Lượng Cao
-          </h1>
-
-          <p className="text-amber-100/90 text-sm sm:text-base leading-relaxed mb-5">
-            Kết nối trực tiếp bà con chăn nuôi, trang trại giống Ba Vì, Vĩnh Phúc, Bắc Giang, Phú Thọ.
-            Hình ảnh video thực tế không che giấu, giá minh bạch, kiểm duyệt an toàn trước khi công khai.
-          </p>
-
-          <div className="flex flex-wrap gap-2.5 sm:gap-3">
+          <div className="flex flex-wrap items-center gap-2.5 shrink-0">
             <Link
               href="/dang-tin"
-              className="inline-flex items-center space-x-2 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold text-sm px-4 py-2.5 rounded-xl shadow-sm transition-all"
+              className="inline-flex items-center space-x-1.5 bg-emerald-700 hover:bg-emerald-800 active:bg-emerald-900 text-white font-semibold text-xs sm:text-sm px-4 py-2.5 rounded-xl shadow-xs transition-colors"
             >
               <PlusCircle className="w-4 h-4" />
               <span>Đăng tin bán đàn bò</span>
             </Link>
 
             <a
-              href="tel:0988888888"
-              className="inline-flex items-center space-x-2 bg-white/10 hover:bg-white/20 text-white font-medium text-sm px-4 py-2.5 rounded-xl backdrop-blur-xs transition-colors border border-white/20"
+              href="tel:0368283539"
+              className="inline-flex items-center space-x-1.5 bg-white/10 hover:bg-white/15 text-stone-200 font-medium text-xs sm:text-sm px-3.5 py-2.5 rounded-xl transition-colors border border-white/15"
             >
-              <span>Hotline tư vấn: 0988.888.888</span>
+              <span>Hotline: 0368.283.539</span>
             </a>
           </div>
         </div>
       </div>
 
-      {/* Bộ Lọc & Tìm Kiếm */}
+      {/* Thanh Tìm Kiếm & Bộ Lọc Nhanh */}
       <ListingFilterBar initialParams={filters} onFilterChange={handleFilterChange} />
 
-      {/* Tiêu đề phần danh sách & Số lượng */}
-      <div className="flex items-center justify-between mb-4">
+      {/* Thanh Tiêu Đề Danh Sách & Số Lượng */}
+      <div className="flex items-center justify-between mb-3.5">
         <div>
-          <h2 className="text-lg sm:text-xl font-bold text-stone-900">
+          <h2 className="text-base sm:text-lg font-bold text-stone-900">
             {filters.breed || "Danh sách bò đang bán công khai"}
           </h2>
-          <p className="text-xs sm:text-sm text-stone-500">
+          <p className="text-xs text-stone-500">
             {loading ? "Đang tìm kiếm..." : `Tìm thấy ${listings.length} tin bán phù hợp`}
           </p>
         </div>
 
         <button
+          type="button"
           onClick={() => fetchListings(filters)}
-          className="text-xs sm:text-sm font-medium text-amber-800 hover:text-amber-950 flex items-center space-x-1 p-1.5 rounded-md hover:bg-amber-50 transition-colors"
+          className="text-xs font-semibold text-amber-900 hover:text-amber-950 flex items-center space-x-1 py-1 px-2.5 rounded-lg hover:bg-stone-100 transition-colors"
           title="Làm mới danh sách"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
@@ -114,66 +112,63 @@ export default function HomePage() {
         </button>
       </div>
 
-      {/* Trạng thái lỗi */}
+      {/* Báo lỗi nếu có */}
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-800 p-4 rounded-2xl flex items-center space-x-3 mb-6">
-          <AlertCircle className="w-5 h-5 shrink-0 text-red-600" />
-          <div className="flex-1 text-sm font-medium">{error}</div>
+        <div className="bg-rose-50 border border-rose-200 text-rose-800 p-4 rounded-xl flex items-center space-x-3 mb-5">
+          <AlertCircle className="w-5 h-5 shrink-0 text-rose-600" />
+          <div className="flex-1 text-xs sm:text-sm font-medium">{error}</div>
           <button
+            type="button"
             onClick={() => fetchListings(filters)}
-            className="text-xs bg-red-100 hover:bg-red-200 text-red-900 font-bold px-3 py-1.5 rounded-lg"
+            className="text-xs bg-rose-100 hover:bg-rose-200 text-rose-900 font-bold px-3 py-1.5 rounded-lg"
           >
             Thử lại
           </button>
         </div>
       )}
 
-      {/* Loading Skeletons */}
+      {/* Loading Skeleton */}
       {loading && listings.length === 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-          {[1, 2, 3, 4, 5, 6].map((n) => (
+        <div className="space-y-4">
+          {[1, 2, 3].map((n) => (
             <div
               key={n}
-              className="bg-white rounded-2xl border border-stone-200 overflow-hidden p-3 animate-pulse"
+              className="bg-white rounded-2xl border border-stone-200 overflow-hidden p-4 flex flex-col sm:flex-row gap-4 animate-pulse"
             >
-              <div className="w-full aspect-[4/3] bg-stone-200 rounded-xl mb-3" />
-              <div className="h-5 bg-stone-200 rounded w-3/4 mb-2" />
-              <div className="h-4 bg-stone-200 rounded w-1/2 mb-4" />
-              <div className="h-10 bg-stone-100 rounded-lg mb-3" />
-              <div className="grid grid-cols-3 gap-2">
-                <div className="h-8 bg-stone-200 rounded" />
-                <div className="h-8 bg-stone-200 rounded" />
-                <div className="h-8 bg-stone-200 rounded" />
+              <div className="w-full sm:w-64 h-48 bg-stone-200 rounded-xl shrink-0" />
+              <div className="flex-1 space-y-3">
+                <div className="h-5 bg-stone-200 rounded w-3/4" />
+                <div className="h-4 bg-stone-200 rounded w-1/2" />
+                <div className="h-12 bg-stone-100 rounded-xl" />
+                <div className="h-8 bg-stone-200 rounded w-full" />
               </div>
             </div>
           ))}
         </div>
       )}
 
-      {/* Danh sách tin bò */}
+      {/* DANH SÁCH TIN BÁN BÒ DẠNG THẺ NGANG (ẢNH MỘT BÊN, THÔNG TIN MỘT BÊN) */}
       {!loading && listings.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+        <div className="space-y-4">
           {listings.map((item) => (
             <ListingCard key={item.id} listing={item} />
           ))}
         </div>
       )}
 
-      {/* Trạng thái không tìm thấy tin nào (Empty State) */}
+      {/* Trạng thái không tìm thấy kết quả (Empty State) */}
       {!loading && listings.length === 0 && !error && (
-        <div className="bg-white rounded-3xl border border-stone-200 p-8 sm:p-12 text-center max-w-lg mx-auto my-8">
-          <div className="w-20 h-20 rounded-full bg-amber-50 text-amber-800 flex items-center justify-center text-4xl mx-auto mb-4">
-            🐂
-          </div>
-          <h3 className="text-lg font-bold text-stone-900 mb-2">
+        <div className="bg-white rounded-2xl border border-stone-200 p-8 sm:p-12 text-center max-w-md mx-auto my-6">
+          <h3 className="text-base font-bold text-stone-900 mb-1">
             Không tìm thấy tin bán bò phù hợp
           </h3>
-          <p className="text-sm text-stone-600 mb-6 leading-relaxed">
-            Hiện chưa có tin bán nào phù hợp với bộ lọc đã chọn. Hãy thử tìm từ khóa khác hoặc đặt lại bộ lọc.
+          <p className="text-xs text-stone-500 mb-5 leading-relaxed">
+            Hiện chưa có tin bán nào phù hợp với bộ lọc bạn đã chọn. Hãy thử tìm từ khóa khác hoặc bỏ bớt tiêu chí lọc.
           </p>
           <button
+            type="button"
             onClick={() => handleFilterChange({})}
-            className="px-5 py-2.5 bg-amber-800 hover:bg-amber-900 text-white font-semibold text-sm rounded-xl transition-colors shadow-xs"
+            className="px-5 py-2.5 bg-amber-800 hover:bg-amber-900 text-white font-semibold text-xs sm:text-sm rounded-xl transition-colors shadow-2xs"
           >
             Xem tất cả tin bán bò
           </button>

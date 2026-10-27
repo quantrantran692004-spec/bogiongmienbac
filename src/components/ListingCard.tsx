@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Phone, MessageCircle, MessageSquare, MapPin, Scale, Eye, Play } from "lucide-react";
+import { Phone, MessageSquare, MapPin, Scale, Eye, Play, Clock, Calendar } from "lucide-react";
+import ZaloIcon from "./icons/ZaloIcon";
 import { ListingItem } from "@/types";
-import { formatPriceDisplay, formatWeight, getTelLink, getZaloLink } from "@/lib/format";
+import { formatPriceDisplay, formatWeight, getTelLink, getZaloLink, formatRelativeTime } from "@/lib/format";
 import MediaViewerModal from "./MediaViewerModal";
 
 interface ListingCardProps {
@@ -38,107 +39,119 @@ export default function ListingCard({
 
   return (
     <>
-      <div className="bg-white rounded-2xl border border-stone-200 shadow-xs hover:shadow-md transition-shadow overflow-hidden flex flex-col justify-between group">
-        <div>
-          {/* Vùng hiển thị ảnh bảo toàn hình dáng trọn vẹn (Không cắt cúp làm mất đầu, thân hoặc chân) */}
-          <div className="relative w-full aspect-[4/3] bg-stone-900 overflow-hidden cursor-pointer">
-            {coverMedia ? (
-              <>
-                {/* Lớp nền mờ (Blurred Backdrop) từ chính ảnh gốc */}
-                <div
-                  className="absolute inset-0 bg-cover bg-center filter blur-lg scale-110 opacity-40"
-                  style={{ backgroundImage: `url(${coverMedia.fileUrl})` }}
-                  aria-hidden="true"
-                />
+      <div className="bg-white rounded-2xl border border-stone-200 shadow-xs hover:shadow-md transition-all overflow-hidden flex flex-col sm:flex-row group">
+        {/* KHỐI ẢNH BÊN TRÁI: Hiển thị trọn vẹn 100% bằng object-contain, không cắt cúp */}
+        <div className="relative w-full sm:w-64 md:w-72 lg:w-80 shrink-0 aspect-[4/3] sm:aspect-auto sm:min-h-[220px] bg-stone-900 overflow-hidden cursor-pointer">
+          {coverMedia ? (
+            <>
+              {/* Nền mờ tự nhiên từ chính ảnh gốc */}
+              <div
+                className="absolute inset-0 bg-cover bg-center filter blur-md scale-110 opacity-35"
+                style={{ backgroundImage: `url(${coverMedia.fileUrl})` }}
+                aria-hidden="true"
+              />
 
-                {/* Lớp ảnh chính hiển thị trọn vẹn 100% bằng object-contain */}
-                <img
-                  src={coverMedia.fileUrl}
-                  alt={listing.title}
-                  className="relative z-10 w-full h-full object-contain group-hover:scale-102 transition-transform duration-300"
-                  onClick={(e) => handleOpenViewer(e, 0)}
-                  loading="lazy"
-                />
-
-                {/* Nút biểu tượng phát video nếu là video */}
-                {coverMedia.fileType === "VIDEO" && (
-                  <button
-                    onClick={(e) => handleOpenViewer(e, 0)}
-                    className="absolute inset-0 z-20 flex items-center justify-center bg-black/20 hover:bg-black/35 transition-colors"
-                  >
-                    <div className="w-12 h-12 rounded-full bg-amber-600/90 text-white flex items-center justify-center shadow-lg">
-                      <Play className="w-6 h-6 ml-0.5 fill-white" />
-                    </div>
-                  </button>
-                )}
-              </>
-            ) : (
-              <div className="w-full h-full flex flex-col items-center justify-center text-stone-400 bg-stone-100">
-                <span className="text-4xl mb-1">🐂</span>
-                <span className="text-xs">Chưa có ảnh</span>
-              </div>
-            )}
-
-            {/* Badge Giống Bò & Số lượng */}
-            <div className="absolute top-2.5 left-2.5 z-20 flex flex-wrap gap-1.5">
-              <span className="bg-amber-900/90 backdrop-blur-xs text-amber-50 text-xs font-semibold px-2.5 py-1 rounded-md shadow-xs">
-                {listing.breed}
-              </span>
-              <span className="bg-stone-900/80 backdrop-blur-xs text-stone-100 text-xs font-medium px-2 py-1 rounded-md shadow-xs">
-                SL: {listing.quantity} con
-              </span>
-            </div>
-
-            {/* Badge Riêng tư / Chờ duyệt hoặc Đã bán */}
-            <div className="absolute top-2.5 right-2.5 z-20 flex flex-col items-end gap-1">
-              {listing.visibility === "PRIVATE" && (
-                <span className="bg-rose-600/95 text-white text-[11px] font-bold px-2 py-0.5 rounded shadow-xs uppercase tracking-wide">
-                  Chờ duyệt
-                </span>
-              )}
-              {listing.status === "SOLD" && (
-                <span className="bg-stone-700/90 text-stone-200 text-[11px] font-bold px-2 py-0.5 rounded shadow-xs uppercase">
-                  Đã bán
-                </span>
-              )}
-              {listing.status === "HIDDEN" && (
-                <span className="bg-stone-500/90 text-white text-[11px] font-bold px-2 py-0.5 rounded shadow-xs">
-                  Tạm ẩn
-                </span>
-              )}
-            </div>
-
-            {/* Badge số ảnh & nút mở xem toàn màn hình */}
-            {mediaCount > 0 && (
-              <button
+              {/* Ảnh chính trọn vẹn 100% bằng object-contain */}
+              <img
+                src={coverMedia.fileUrl}
+                alt={listing.title}
+                className="relative z-10 w-full h-full object-contain group-hover:scale-102 transition-transform duration-300"
                 onClick={(e) => handleOpenViewer(e, 0)}
-                className="absolute bottom-2.5 right-2.5 z-20 bg-stone-900/80 hover:bg-black text-white text-xs font-medium px-2.5 py-1 rounded-md flex items-center space-x-1 backdrop-blur-xs transition-colors"
-                title="Bấm để xem ảnh phóng to"
-              >
-                <Eye className="w-3.5 h-3.5" />
-                <span>{mediaCount} ảnh</span>
-                {hasVideo && <span className="text-amber-400 font-bold">• Video</span>}
-              </button>
+                loading="lazy"
+              />
+
+              {/* Nút phát video rõ ràng nếu là video, không tự phát */}
+              {coverMedia.fileType === "VIDEO" && (
+                <button
+                  type="button"
+                  onClick={(e) => handleOpenViewer(e, 0)}
+                  className="absolute inset-0 z-20 flex items-center justify-center bg-black/25 hover:bg-black/40 transition-colors"
+                  aria-label="Phát video thực tế"
+                >
+                  <div className="w-11 h-11 rounded-full bg-amber-600/90 hover:bg-amber-500 text-white flex items-center justify-center shadow-lg transition-transform hover:scale-110">
+                    <Play className="w-5 h-5 ml-0.5 fill-white" />
+                  </div>
+                </button>
+              )}
+            </>
+          ) : (
+            <div className="w-full h-full flex flex-col items-center justify-center text-stone-400 bg-stone-100 p-4">
+              <span className="text-xs font-medium">Chưa có ảnh</span>
+            </div>
+          )}
+
+          {/* Badge Trạng thái & Quyền riêng tư */}
+          <div className="absolute top-2.5 left-2.5 z-20 flex flex-wrap gap-1">
+            {listing.visibility === "PRIVATE" && (
+              <span className="bg-rose-700 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-xs uppercase tracking-wide">
+                Chờ duyệt
+              </span>
+            )}
+            {listing.status === "SOLD" && (
+              <span className="bg-stone-800 text-stone-100 text-[10px] font-bold px-2 py-0.5 rounded shadow-xs uppercase">
+                Đã bán
+              </span>
+            )}
+            {listing.status === "HIDDEN" && (
+              <span className="bg-stone-600 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-xs">
+                Tạm ẩn
+              </span>
             )}
           </div>
 
-          {/* Vùng thông tin chính */}
-          <div className="p-3.5 sm:p-4">
-            {/* Tiêu đề tin */}
-            <Link href={`/listing/${listing.id}`} className="block">
-              <h3 className="font-bold text-base sm:text-lg text-stone-900 group-hover:text-amber-800 transition-colors line-clamp-2 leading-snug mb-2">
+          {/* Badge số ảnh & nút xem toàn màn hình */}
+          {mediaCount > 0 && (
+            <button
+              type="button"
+              onClick={(e) => handleOpenViewer(e, 0)}
+              className="absolute bottom-2.5 right-2.5 z-20 bg-stone-900/85 hover:bg-black text-white text-[11px] font-medium px-2 py-1 rounded-md flex items-center space-x-1 backdrop-blur-xs transition-colors"
+              title="Mở xem ảnh lớn toàn màn hình"
+            >
+              <Eye className="w-3.5 h-3.5" />
+              <span>{mediaCount} ảnh</span>
+              {hasVideo && <span className="text-amber-400 font-bold">• Video</span>}
+            </button>
+          )}
+        </div>
+
+        {/* KHỐI THÔNG TIN BÊN PHẢI: Bố cục ngang thông tin rõ ràng, không rối mắt */}
+        <div className="flex-1 p-3.5 sm:p-4 lg:p-5 flex flex-col justify-between">
+          <div>
+            {/* Hàng nhãn: Giống bò, Số lượng & Thời gian đăng */}
+            <div className="flex flex-wrap items-center justify-between gap-1.5 mb-2">
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span className="bg-amber-100/90 text-amber-900 text-xs font-bold px-2.5 py-0.5 rounded-md">
+                  {listing.breed}
+                </span>
+                <span className="bg-stone-100 text-stone-700 text-xs font-semibold px-2 py-0.5 rounded-md">
+                  SL: {listing.quantity} con
+                </span>
+              </div>
+
+              {listing.createdAt && (
+                <span className="text-[11px] text-stone-400 flex items-center space-x-1 shrink-0">
+                  <Clock className="w-3 h-3" />
+                  <span>{formatRelativeTime(listing.createdAt)}</span>
+                </span>
+              )}
+            </div>
+
+            {/* Tiêu đề tin bán bò */}
+            <Link href={`/listing/${listing.id}`} className="block group/title">
+              <h3 className="font-bold text-base sm:text-lg text-stone-900 group-hover/title:text-amber-800 transition-colors line-clamp-2 leading-snug mb-2">
                 {listing.title}
               </h3>
             </Link>
 
-            {/* Hàng thông số: Cân nặng & Địa điểm */}
-            <div className="flex items-center justify-between text-xs sm:text-sm text-stone-600 mb-3 gap-2">
-              <div className="flex items-center space-x-1 shrink-0">
+            {/* Thông số: Cân nặng & Địa bàn chăn nuôi */}
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs sm:text-sm text-stone-600 mb-3">
+              <div className="flex items-center space-x-1.5 shrink-0">
                 <Scale className="w-4 h-4 text-amber-700" />
                 <span className="font-medium text-stone-800">
-                  {formatWeight(listing.weightAvgKg)}
+                  Cân nặng: {formatWeight(listing.weightAvgKg)}
                 </span>
               </div>
+
               <div className="flex items-center space-x-1 text-stone-500 truncate">
                 <MapPin className="w-3.5 h-3.5 text-stone-400 shrink-0" />
                 <span className="truncate">
@@ -147,107 +160,113 @@ export default function ListingCard({
               </div>
             </div>
 
-            {/* Vùng Giá Bán Nổi Bật theo yêu cầu có nhãn Giá Tham Khảo */}
-            <div className="bg-amber-50/70 border border-amber-200/80 rounded-xl p-2.5 mb-3">
-              <div className="flex items-baseline justify-between">
-                <div>
-                  <span className="text-[11px] font-semibold text-amber-900/80 uppercase block tracking-wider">
-                    Giá tham khảo
-                  </span>
-                  <div className="text-lg sm:text-xl font-extrabold text-amber-950">
-                    {formatPriceDisplay(listing.priceAmount, listing.priceType)}
-                  </div>
-                </div>
+            {/* Người bán / Trại bò */}
+            <div className="text-xs text-stone-500 mb-3 flex items-center space-x-1.5">
+              <span className="font-medium text-stone-700 truncate">
+                Người bán: {listing.seller.fullName || listing.seller.phone}
+              </span>
+            </div>
+          </div>
 
-                {/* Nhãn báo giá */}
-                <span className="text-xs font-medium text-amber-900 bg-amber-200/70 px-2 py-0.5 rounded">
-                  {listing.priceType === "PER_HEAD"
-                    ? "Theo con"
-                    : listing.priceType === "PER_HERD"
-                    ? "Cả đàn"
-                    : "Thương lượng"}
+          <div>
+            {/* Vùng Giá Bán Nổi Bật Theo Yêu Cầu */}
+            <div className="bg-amber-50/70 border border-amber-200/70 rounded-xl p-2.5 sm:p-3 mb-3 flex items-baseline justify-between">
+              <div>
+                <span className="text-[11px] font-bold text-amber-900/80 uppercase tracking-wider block">
+                  Giá tham khảo
                 </span>
+                <div className="text-lg sm:text-xl font-black text-amber-950">
+                  {formatPriceDisplay(listing.priceAmount, listing.priceType)}
+                </div>
               </div>
+
+              <span className="text-xs font-semibold text-amber-900 bg-amber-200/60 px-2.5 py-1 rounded-md">
+                {listing.priceType === "PER_HEAD"
+                  ? "Bán theo con"
+                  : listing.priceType === "PER_HERD"
+                  ? "Bán cả đàn"
+                  : "Giá thương lượng"}
+              </span>
             </div>
-          </div>
-        </div>
 
-        {/* 3 Nút liên hệ bắt buộc trên từng tin */}
-        <div className="px-3.5 pb-3.5 sm:px-4 sm:pb-4 border-t border-stone-100 pt-3">
-          <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
-            {/* 1. Nút Gọi Điện Thoại */}
-            <a
-              href={getTelLink(listing.seller.phone)}
-              className="inline-flex items-center justify-center space-x-1 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-semibold text-xs sm:text-sm py-2 px-1 rounded-lg shadow-2xs transition-colors"
-              title={`Gọi ngay ${listing.seller.phone}`}
-            >
-              <Phone className="w-3.5 h-3.5 shrink-0" />
-              <span>Gọi điện</span>
-            </a>
+            {/* 3 NÚT LIÊN HỆ BẮT BUỘC TRÊN TỪNG TIN */}
+            <div className="grid grid-cols-3 gap-2">
+              {/* 1. Gọi điện thoại */}
+              <a
+                href={getTelLink(listing.seller.phone)}
+                className="inline-flex items-center justify-center space-x-1.5 bg-emerald-700 hover:bg-emerald-800 active:bg-emerald-900 text-white font-semibold text-xs sm:text-sm py-2 px-2 rounded-xl shadow-2xs transition-colors"
+                title={`Gọi ngay: ${listing.seller.phone}`}
+              >
+                <Phone className="w-4 h-4 shrink-0" />
+                <span>Gọi điện</span>
+              </a>
 
-            {/* 2. Nút Chat Zalo */}
-            <a
-              href={getZaloLink(listing.seller.zaloNumber || listing.seller.phone)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center space-x-1 bg-sky-600 hover:bg-sky-700 active:bg-sky-800 text-white font-semibold text-xs sm:text-sm py-2 px-1 rounded-lg shadow-2xs transition-colors"
-              title="Mở Zalo nhắn tin trực tiếp"
-            >
-              <MessageCircle className="w-3.5 h-3.5 shrink-0" />
-              <span>Zalo</span>
-            </a>
+              {/* 2. Chat Zalo (Dùng Icon Zalo chuẩn) */}
+              <a
+                href={getZaloLink(listing.seller.zaloNumber || listing.seller.phone)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center space-x-1.5 bg-sky-600 hover:bg-sky-700 active:bg-sky-800 text-white font-semibold text-xs sm:text-sm py-2 px-2 rounded-xl shadow-2xs transition-colors"
+                title="Nhắn tin qua Zalo"
+              >
+                <ZaloIcon className="w-4 h-4 shrink-0" />
+                <span>Zalo</span>
+              </a>
 
-            {/* 3. Nút Nhắn Tin Trực Tiếp Trên Web */}
-            <Link
-              href={`/chat?listingId=${listing.id}`}
-              className="inline-flex items-center justify-center space-x-1 bg-amber-800 hover:bg-amber-900 active:bg-amber-950 text-white font-semibold text-xs sm:text-sm py-2 px-1 rounded-lg shadow-2xs transition-colors"
-              title="Nhắn tin trên sàn"
-            >
-              <MessageSquare className="w-3.5 h-3.5 shrink-0" />
-              <span>Nhắn tin</span>
-            </Link>
-          </div>
-
-          {/* Vùng hành động dành riêng cho Quản Trị Viên (nếu được bật) */}
-          {showAdminActions && (
-            <div className="mt-3 pt-2.5 border-t border-stone-200/80 flex flex-wrap items-center justify-between gap-1.5 text-xs">
-              {listing.visibility === "PRIVATE" && onApprove && (
-                <button
-                  onClick={() => onApprove(listing.id)}
-                  className="bg-emerald-700 hover:bg-emerald-800 text-white px-3 py-1.5 rounded-md font-bold shadow-xs transition-colors"
-                >
-                  ✓ Duyệt công khai ngay
-                </button>
-              )}
-
-              {onStatusChange && (
-                <select
-                  value={listing.status}
-                  onChange={(e) =>
-                    onStatusChange(listing.id, e.target.value as "SELLING" | "SOLD" | "HIDDEN")
-                  }
-                  className="text-xs border border-stone-300 rounded px-2 py-1 bg-white text-stone-800 font-medium"
-                >
-                  <option value="SELLING">Đang bán</option>
-                  <option value="SOLD">Đã bán</option>
-                  <option value="HIDDEN">Tạm ẩn</option>
-                </select>
-              )}
-
-              {onDelete && (
-                <button
-                  onClick={() => onDelete(listing.id)}
-                  className="text-red-600 hover:text-red-800 hover:underline px-2 py-1"
-                >
-                  Xóa tin
-                </button>
-              )}
+              {/* 3. Nhắn tin trên sàn */}
+              <Link
+                href={`/chat?listingId=${listing.id}`}
+                className="inline-flex items-center justify-center space-x-1.5 bg-amber-800 hover:bg-amber-900 active:bg-amber-950 text-white font-semibold text-xs sm:text-sm py-2 px-2 rounded-xl shadow-2xs transition-colors"
+                title="Trò chuyện trực tiếp trên website"
+              >
+                <MessageSquare className="w-4 h-4 shrink-0" />
+                <span>Nhắn tin</span>
+              </Link>
             </div>
-          )}
+
+            {/* Vùng hành động Quản trị viên (nếu mở trong Admin Dashboard) */}
+            {showAdminActions && (
+              <div className="mt-3 pt-2.5 border-t border-stone-200 flex flex-wrap items-center justify-between gap-2 text-xs">
+                {listing.visibility === "PRIVATE" && onApprove && (
+                  <button
+                    type="button"
+                    onClick={() => onApprove(listing.id)}
+                    className="bg-emerald-700 hover:bg-emerald-800 text-white px-3 py-1.5 rounded-lg font-bold shadow-xs transition-colors"
+                  >
+                    ✓ Duyệt công khai ngay
+                  </button>
+                )}
+
+                {onStatusChange && (
+                  <select
+                    value={listing.status}
+                    onChange={(e) =>
+                      onStatusChange(listing.id, e.target.value as "SELLING" | "SOLD" | "HIDDEN")
+                    }
+                    className="text-xs border border-stone-300 rounded-lg px-2.5 py-1 bg-white text-stone-800 font-semibold"
+                  >
+                    <option value="SELLING">Đang bán</option>
+                    <option value="SOLD">Đã bán</option>
+                    <option value="HIDDEN">Tạm ẩn</option>
+                  </select>
+                )}
+
+                {onDelete && (
+                  <button
+                    type="button"
+                    onClick={() => onDelete(listing.id)}
+                    className="text-rose-600 hover:text-rose-800 font-semibold hover:underline px-2 py-1"
+                  >
+                    Xóa tin
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Modal xem toàn màn hình Lightbox */}
+      {/* Lightbox xem ảnh toàn màn hình */}
       {listing.media && listing.media.length > 0 && (
         <MediaViewerModal
           media={listing.media}

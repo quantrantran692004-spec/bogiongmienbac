@@ -17,6 +17,7 @@ import {
   LogOut,
   Edit3,
 } from "lucide-react";
+import CattleLogoIcon from "@/components/icons/CattleLogoIcon";
 
 export default function TaiKhoanPage() {
   const router = useRouter();
@@ -152,8 +153,12 @@ export default function TaiKhoanPage() {
       <div className="bg-white rounded-3xl border border-stone-200 p-5 sm:p-6 shadow-xs mb-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-center space-x-4">
-            <div className="w-16 h-16 rounded-2xl bg-amber-800 text-white flex items-center justify-center text-2xl font-black shadow-md">
-              {user?.fullName ? user.fullName.charAt(0).toUpperCase() : "🐂"}
+            <div className="w-14 h-14 rounded-2xl bg-amber-800 text-white flex items-center justify-center shadow-xs">
+              {user?.fullName ? (
+                <span className="text-xl font-bold">{user.fullName.charAt(0).toUpperCase()}</span>
+              ) : (
+                <CattleLogoIcon className="w-7 h-7 text-amber-100" />
+              )}
             </div>
             <div>
               <div className="flex items-center space-x-2">
@@ -260,7 +265,7 @@ export default function TaiKhoanPage() {
           </Link>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
           {filteredListings.map((item) => (
             <div key={item.id} className="relative flex flex-col">
               <ListingCard
