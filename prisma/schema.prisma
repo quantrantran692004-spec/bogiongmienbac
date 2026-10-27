@@ -1,0 +1,152 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  ADMIN
+  SELLER
+}
+
+enum ListingStatus {
+  SELLING
+  SOLD
+  HIDDEN
+}
+
+enum ListingVisibility {
+  PUBLIC
+  PRIVATE
+}
+
+enum PriceType {
+  PER_HEAD     // Giá theo con
+  PER_HERD     // Giá cả đàn
+  NEGOTIABLE   // Giá thương lượng
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+}
+
+model User {
+  id           String   @id @default(cuid())
+  phone        String   @unique
+  fullName     String?
+  zaloNumber   String?
+  role         Role     @default(SELLER)
+  status       String   @default("ACTIVE") // ACTIVE, SUSPENDED
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  listings            Listing[]
+  buyerConversations  ChatConversation[] @relation("BuyerConversations")
+  sellerConversations ChatConversation[] @relation("SellerConversations")
+  messages            ChatMessage[]
+  priceChanges        PriceHistory[]
+}
+
+model Listing {
+  id             String            @id @default(cuid())
+  title          String
+  slug           String            @unique
+  description    String?
+  breed          String            // Giống bò: 3B, Brahman, Sind, Angus, Vàng, Charolais, Droughmaster...
+  quantity       Int               @default(1)
+  weightAvgKg    Float?            // Cân nặng trung bình/con (kg)
+  priceType      PriceType         @default(PER_HEAD)
+  priceAmount    Float?            // null = Liên hệ
+  status         ListingStatus     @default(SELLING)
+  visibility     ListingVisibility @default(PRIVATE)
+  createdByAdmin Boolean           @default(false)
+  province       String?           // Tỉnh / Thành phố
+  district       String?           // Huyện / Thị xã
+
+  sellerId       String
+  seller         User              @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  media          ListingMedia[]
+  priceHistories PriceHistory[]
+  conversations  ChatConversation[]
+
+  @@index([visibility, status])
+  @@index([breed])
+  @@index([sellerId])
+}
+
+model ListingMedia {
+  id           String    @id @default(cuid())
+  listingId    String
+  listing      Listing   @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  fileUrl      String
+  thumbnailUrl String?
+  fileType     MediaType @default(IMAGE)
+  width        Int?
+  height       Int?
+  aspectRatio  Float?
+  sortOrder    Int       @default(0)
+  isCover      Boolean   @default(false)
+  createdAt    DateTime  @default(now())
+
+  @@index([listingId, sortOrder])
+}
+
+model PriceHistory {
+  id              String     @id @default(cuid())
+  listingId       String
+  listing         Listing    @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  oldPrice        Float?
+  newPrice        Float?
+  oldPriceType    PriceType?
+  newPriceType    PriceType
+  changedByUserId String
+  changedByUser   User       @relation(fields: [changedByUserId], references: [id])
+  changedAt       DateTime   @default(now())
+
+  @@index([listingId])
+}
+
+model ChatConversation {
+  id            String        @id @default(cuid())
+  listingId     String
+  listing       Listing       @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  buyerId       String
+  buyer         User          @relation("BuyerConversations", fields: [buyerId], references: [id], onDelete: Cascade)
+  sellerId      String
+  seller        User          @relation("SellerConversations", fields: [sellerId], references: [id], onDelete: Cascade)
+  lastMessageAt DateTime      @default(now())
+  createdAt     DateTime      @default(now())
+
+  messages      ChatMessage[]
+
+  @@unique([listingId, buyerId])
+  @@index([buyerId])
+  @@index([sellerId])
+}
+
+model ChatMessage {
+  id             String           @id @default(cuid())
+  conversationId String
+  conversation   ChatConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderId       String
+  sender         User             @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  content        String
+  isRead         Boolean          @default(false)
+  createdAt      DateTime         @default(now())
+
+  @@index([conversationId, createdAt])
+}
+
+model SiteSetting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}
