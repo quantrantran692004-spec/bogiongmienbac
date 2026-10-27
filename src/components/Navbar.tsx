@@ -1,12 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { UserSession } from "@/types";
-import { Phone, ShieldCheck, PlusCircle, User, LogOut, MessageSquare } from "lucide-react";
+import { Plus, Bell, MessageSquare, User, LogOut, ShieldCheck } from "lucide-react";
 import CattleLogoIcon from "./icons/CattleLogoIcon";
 
 export default function Navbar({ initialUser }: { initialUser?: UserSession | null }) {
+  const pathname = usePathname();
   const [user, setUser] = useState<UserSession | null>(initialUser ?? null);
 
   useEffect(() => {
@@ -18,7 +20,7 @@ export default function Navbar({ initialUser }: { initialUser?: UserSession | nu
         })
         .catch(() => {});
     }
-  }, [initialUser]);
+  }, [initialUser, pathname]);
 
   const handleLogout = async () => {
     try {
@@ -30,87 +32,85 @@ export default function Navbar({ initialUser }: { initialUser?: UserSession | nu
     }
   };
 
-  return (
-    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-stone-200 shadow-2xs">
-      {/* Thanh thông báo & Hotline trên cùng */}
-      <div className="bg-stone-900 text-stone-300 text-xs py-1.5 px-4">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <span className="truncate text-stone-300 font-medium">
-            Sàn Giao Dịch Bò Giống & Bò Thịt Miền Bắc • Kiểm duyệt an toàn chất lượng
-          </span>
-          <div className="flex items-center space-x-4 shrink-0">
-            <a
-              href="tel:0368283539"
-              className="flex items-center space-x-1.5 text-amber-400 hover:text-amber-300 font-semibold transition-colors"
-            >
-              <Phone className="w-3.5 h-3.5" />
-              <span>Hotline: 0368.283.539</span>
-            </a>
-          </div>
-        </div>
-      </div>
+  const navLinks = [
+    { label: "Trang chủ", href: "/" },
+    { label: "Danh mục", href: "/danh-sach-bo" },
+    { label: "Tin đăng", href: "/danh-sach-bo" },
+    { label: "Tin nhắn", href: "/chat" },
+    { label: "Tài khoản", href: user ? (user.role === "ADMIN" ? "/admin" : "/tai-khoan") : "/dang-nhap" },
+  ];
 
-      {/* Thanh chính */}
-      <div className="max-w-6xl mx-auto px-3 sm:px-6">
-        <div className="flex items-center justify-between h-16 gap-3">
-          {/* Logo & Tên sàn chuyên nghiệp */}
-          <Link href="/" className="flex items-center space-x-2.5 shrink-0 group">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-700 to-amber-900 flex items-center justify-center text-white shadow-xs group-hover:scale-105 transition-transform">
-              <CattleLogoIcon className="w-5 h-5 text-amber-100" />
+  return (
+    <header className="sticky top-0 z-40 bg-white border-b border-gray-100 shadow-2xs">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-18 gap-4">
+          {/* Logo đúng mẫu ảnh */}
+          <Link href="/" className="flex items-center space-x-3 shrink-0 group">
+            <div className="w-11 h-11 rounded-full bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-700 shadow-2xs group-hover:scale-105 transition-transform">
+              <CattleLogoIcon className="w-6 h-6 text-amber-600" />
             </div>
             <div>
-              <span className="text-base sm:text-lg font-extrabold tracking-tight text-stone-900 block leading-tight">
+              <span className="text-lg font-black tracking-tight text-gray-900 block leading-tight">
                 Bò Giống Miền Bắc
               </span>
-              <span className="text-[11px] text-stone-500 font-medium hidden sm:block">
-                Sàn mua bán bò giống chất lượng cao
+              <span className="text-[11px] text-gray-500 font-medium block">
+                Kết nối người mua - người bán
               </span>
             </div>
           </Link>
 
-          {/* Nút hành động */}
-          <div className="flex items-center space-x-2 sm:space-x-3">
+          {/* Menu Điều Hướng Chính (Desktop) */}
+          <nav className="hidden md:flex items-center space-x-8 text-sm font-medium">
+            {navLinks.map((link) => {
+              const isActive =
+                link.href === "/"
+                  ? pathname === "/"
+                  : pathname.startsWith(link.href);
+
+              return (
+                <Link
+                  key={link.label}
+                  href={link.href}
+                  className={`transition-colors py-1 relative ${
+                    isActive
+                      ? "text-[#056839] font-bold after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-[#056839]"
+                      : "text-gray-600 hover:text-[#056839]"
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
+          </nav>
+
+          {/* Nút Đăng Tin & Tài khoản (Bên phải) */}
+          <div className="flex items-center space-x-3">
+            {/* Nút Đăng Tin Chuẩn Xanh Lá Như Mẫu */}
             <Link
               href="/dang-tin"
-              className="inline-flex items-center space-x-1.5 bg-emerald-700 hover:bg-emerald-800 active:bg-emerald-900 text-white font-semibold text-xs sm:text-sm px-3.5 py-2 rounded-xl shadow-xs transition-colors"
+              className="inline-flex items-center space-x-1.5 bg-[#056839] hover:bg-[#04522d] text-white font-semibold text-xs sm:text-sm px-4 py-2.5 rounded-lg shadow-sm transition-all hover:shadow active:scale-98"
             >
-              <PlusCircle className="w-4 h-4" />
+              <Plus className="w-4 h-4 stroke-[2.5]" />
               <span>Đăng tin</span>
             </Link>
 
+            {/* Tài khoản / Đăng nhập */}
             {user ? (
-              <div className="flex items-center space-x-1.5 sm:space-x-2">
-                {user.role === "ADMIN" ? (
-                  <Link
-                    href="/admin"
-                    className="inline-flex items-center space-x-1 text-xs sm:text-sm font-bold bg-amber-100 text-amber-900 border border-amber-300 px-3 py-1.5 rounded-xl hover:bg-amber-200 transition-colors"
-                  >
-                    <ShieldCheck className="w-4 h-4 text-amber-800" />
-                    <span className="hidden sm:inline">Quản Trị Viên</span>
-                    <span className="sm:hidden">Admin</span>
-                  </Link>
-                ) : (
-                  <Link
-                    href="/tai-khoan"
-                    className="inline-flex items-center space-x-1 text-xs sm:text-sm font-medium bg-stone-100 text-stone-800 px-3 py-1.5 rounded-xl hover:bg-stone-200 transition-colors"
-                  >
-                    <User className="w-4 h-4 text-stone-600" />
-                    <span className="max-w-[120px] truncate hidden sm:inline">{user.fullName || user.phone}</span>
-                  </Link>
-                )}
-
+              <div className="flex items-center space-x-2">
                 <Link
-                  href="/chat"
-                  className="p-2 text-stone-600 hover:text-amber-900 hover:bg-stone-100 rounded-xl transition-colors relative"
-                  title="Tin nhắn trao đổi"
+                  href={user.role === "ADMIN" ? "/admin" : "/tai-khoan"}
+                  className="flex items-center space-x-2 p-1.5 rounded-full hover:bg-gray-100 transition-colors"
+                  title={user.fullName || user.phone}
                 >
-                  <MessageSquare className="w-5 h-5" />
+                  <div className="w-8 h-8 rounded-full bg-emerald-100 text-[#056839] flex items-center justify-center font-bold text-xs border border-emerald-300">
+                    {user.fullName ? user.fullName.charAt(0).toUpperCase() : "U"}
+                  </div>
                 </Link>
 
                 <button
                   type="button"
                   onClick={handleLogout}
-                  className="p-2 text-stone-400 hover:text-rose-700 hover:bg-rose-50 rounded-xl transition-colors"
+                  className="p-2 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
                   title="Đăng xuất"
                 >
                   <LogOut className="w-4 h-4" />
@@ -119,10 +119,10 @@ export default function Navbar({ initialUser }: { initialUser?: UserSession | nu
             ) : (
               <Link
                 href="/dang-nhap"
-                className="inline-flex items-center space-x-1.5 text-xs sm:text-sm font-semibold text-stone-800 bg-stone-100 hover:bg-stone-200 px-3.5 py-2 rounded-xl transition-colors"
+                className="p-2 text-gray-600 hover:text-[#056839] hover:bg-gray-50 rounded-lg transition-colors"
+                title="Đăng nhập"
               >
-                <User className="w-4 h-4 text-stone-600" />
-                <span>Đăng nhập</span>
+                <User className="w-5 h-5" />
               </Link>
             )}
           </div>

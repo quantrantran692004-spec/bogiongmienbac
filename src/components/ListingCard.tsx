@@ -170,17 +170,17 @@ export default function ListingCard({
 
           <div>
             {/* Vùng Giá Bán Nổi Bật Theo Yêu Cầu */}
-            <div className="bg-amber-50/70 border border-amber-200/70 rounded-xl p-2.5 sm:p-3 mb-3 flex items-baseline justify-between">
+            <div className="bg-red-50/60 border border-red-100 rounded-xl p-2.5 sm:p-3 mb-3 flex items-baseline justify-between">
               <div>
-                <span className="text-[11px] font-bold text-amber-900/80 uppercase tracking-wider block">
-                  Giá tham khảo
+                <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wider block">
+                  Giá bán công khai
                 </span>
-                <div className="text-lg sm:text-xl font-black text-amber-950">
+                <div className="text-xl sm:text-2xl font-black text-[#d92d20]">
                   {formatPriceDisplay(listing.priceAmount, listing.priceType)}
                 </div>
               </div>
 
-              <span className="text-xs font-semibold text-amber-900 bg-amber-200/60 px-2.5 py-1 rounded-md">
+              <span className="text-xs font-semibold text-emerald-800 bg-emerald-100/70 px-2.5 py-1 rounded-md">
                 {listing.priceType === "PER_HEAD"
                   ? "Bán theo con"
                   : listing.priceType === "PER_HERD"
@@ -194,7 +194,7 @@ export default function ListingCard({
               {/* 1. Gọi điện thoại */}
               <a
                 href={getTelLink(listing.seller.phone)}
-                className="inline-flex items-center justify-center space-x-1.5 bg-emerald-700 hover:bg-emerald-800 active:bg-emerald-900 text-white font-semibold text-xs sm:text-sm py-2 px-2 rounded-xl shadow-2xs transition-colors"
+                className="inline-flex items-center justify-center space-x-1.5 bg-[#056839] hover:bg-[#04522d] active:scale-98 text-white font-semibold text-xs sm:text-sm py-2 px-2 rounded-xl shadow-2xs transition-all"
                 title={`Gọi ngay: ${listing.seller.phone}`}
               >
                 <Phone className="w-4 h-4 shrink-0" />
@@ -206,7 +206,7 @@ export default function ListingCard({
                 href={getZaloLink(listing.seller.zaloNumber || listing.seller.phone)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center space-x-1.5 bg-sky-600 hover:bg-sky-700 active:bg-sky-800 text-white font-semibold text-xs sm:text-sm py-2 px-2 rounded-xl shadow-2xs transition-colors"
+                className="inline-flex items-center justify-center space-x-1.5 bg-[#0068ff] hover:bg-blue-600 active:scale-98 text-white font-semibold text-xs sm:text-sm py-2 px-2 rounded-xl shadow-2xs transition-all"
                 title="Nhắn tin qua Zalo"
               >
                 <ZaloIcon className="w-4 h-4 shrink-0" />
@@ -216,7 +216,7 @@ export default function ListingCard({
               {/* 3. Nhắn tin trên sàn */}
               <Link
                 href={`/chat?listingId=${listing.id}`}
-                className="inline-flex items-center justify-center space-x-1.5 bg-amber-800 hover:bg-amber-900 active:bg-amber-950 text-white font-semibold text-xs sm:text-sm py-2 px-2 rounded-xl shadow-2xs transition-colors"
+                className="inline-flex items-center justify-center space-x-1.5 bg-[#0d9488] hover:bg-teal-700 active:scale-98 text-white font-semibold text-xs sm:text-sm py-2 px-2 rounded-xl shadow-2xs transition-all"
                 title="Trò chuyện trực tiếp trên website"
               >
                 <MessageSquare className="w-4 h-4 shrink-0" />

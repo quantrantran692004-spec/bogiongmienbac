@@ -141,8 +141,8 @@ export async function POST(request: Request) {
     }
 
     const isAdmin = user.role === "ADMIN";
-    // Quy tắc bắt buộc: Tin do Admin tạo có thể công khai ngay; tin do người dùng tạo LUÔN lưu vào PRIVATE
-    const visibility: ListingVisibility = isAdmin ? "PUBLIC" : "PRIVATE";
+    // Tin đăng công khai ngay lập tức lên sàn (không cần admin duyệt)
+    const visibility: ListingVisibility = "PUBLIC";
 
     const slug = generateSlug(body.title);
 
@@ -193,9 +193,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       success: true,
       listing,
-      message: isAdmin
-        ? "Đã đăng tin công khai thành công!"
-        : "Đã gửi tin thành công! Tin của bạn đang ở khu vực chờ Quản trị viên duyệt công khai.",
+      message: "Đã đăng tin bán bò công khai thành công lên sàn!",
     });
   } catch (error) {
     console.error("Listing POST error:", error);
