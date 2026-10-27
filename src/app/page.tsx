@@ -34,7 +34,7 @@ const BREED_CATEGORIES = [
     id: "brahman",
     name: "Bò Brahman",
     breedQuery: "Bò Brahman",
-    imageUrl: "https://images.unsplash.com/photo-1527153857715-3908f2ae5e81?auto=format&fit=crop&w=300&q=80",
+    imageUrl: "https://images.unsplash.com/photo-1500595046743-cd271d694d30?auto=format&fit=crop&w=300&q=80",
   },
   {
     id: "sind",
@@ -46,7 +46,7 @@ const BREED_CATEGORIES = [
     id: "angus",
     name: "Bò Angus Đen",
     breedQuery: "Bò Angus",
-    imageUrl: "https://images.unsplash.com/photo-1500595046743-cd271d694d30?auto=format&fit=crop&w=300&q=80",
+    imageUrl: "https://images.unsplash.com/photo-1527153857715-3908f2ae5e81?auto=format&fit=crop&w=300&q=80",
   },
   {
     id: "lai",
@@ -202,24 +202,24 @@ export default function HomePage() {
         </section>
 
         {/* 3. HÀNG 4 TRUST BADGES (GIAO DỊCH AN TOÀN, HỖ TRỢ TẬN TÂM, KẾT NỐI NHANH, UY TÍN HÀNG ĐẦU) */}
-        <section className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <section className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
           {TRUST_BADGES.map((badge, idx) => {
             const IconComponent = badge.icon;
             return (
               <div
                 key={idx}
-                className="bg-white rounded-2xl p-4 border border-gray-100 shadow-2xs flex items-center space-x-3.5 hover:shadow-xs transition-shadow"
+                className="bg-white rounded-2xl p-3 sm:p-4 border border-gray-100 shadow-2xs flex items-center space-x-2.5 sm:space-x-3.5 hover:shadow-xs transition-shadow"
               >
                 <div
-                  className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 border ${badge.color}`}
+                  className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center shrink-0 border ${badge.color}`}
                 >
-                  <IconComponent className="w-6 h-6" />
+                  <IconComponent className="w-5 h-5 sm:w-6 sm:h-6" />
                 </div>
                 <div className="min-w-0">
-                  <h4 className="font-bold text-xs sm:text-sm text-gray-900 truncate">
+                  <h4 className="font-bold text-xs sm:text-sm text-gray-900 leading-tight">
                     {badge.title}
                   </h4>
-                  <p className="text-[11px] text-gray-500 truncate">
+                  <p className="text-[10px] sm:text-[11px] text-gray-500 leading-tight mt-0.5">
                     {badge.desc}
                   </p>
                 </div>

@@ -84,11 +84,11 @@ export default function Navbar({ initialUser }: { initialUser?: UserSession | nu
           </nav>
 
           {/* Nút Đăng Tin & Tài khoản (Bên phải) */}
-          <div className="flex items-center space-x-3">
-            {/* Nút Đăng Tin Chuẩn Xanh Lá Như Mẫu */}
+          <div className="flex items-center space-x-2 sm:space-x-3 shrink-0">
+            {/* Nút Đăng Tin Chuẩn Xanh Lá Như Mẫu (Ẩn trên mobile vì đã có BottomNav nổi bật) */}
             <Link
               href="/dang-tin"
-              className="inline-flex items-center space-x-1.5 bg-[#056839] hover:bg-[#04522d] text-white font-semibold text-xs sm:text-sm px-4 py-2.5 rounded-lg shadow-sm transition-all hover:shadow active:scale-98"
+              className="hidden sm:inline-flex items-center space-x-1.5 bg-[#056839] hover:bg-[#04522d] text-white font-semibold text-xs sm:text-sm px-4 py-2.5 rounded-lg shadow-sm transition-all hover:shadow active:scale-98"
             >
               <Plus className="w-4 h-4 stroke-[2.5]" />
               <span>Đăng tin</span>
