@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { writeFile } from "fs/promises";
+import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 import crypto from "crypto";
 import { getSessionUser } from "@/lib/auth";
@@ -7,9 +7,7 @@ import { getSessionUser } from "@/lib/auth";
 export async function POST(request: Request) {
   try {
     const user = await getSessionUser();
-    if (!user) {
-      return NextResponse.json({ error: "Vui lòng đăng nhập để tải lên tệp" }, { status: 401 });
-    }
+    // Cho phép khách vãng lai tải ảnh khi đăng tin (xác thực SĐT ở bước cuối)
 
     const formData = await request.formData();
     const file = formData.get("file") as File | null;
@@ -41,6 +39,7 @@ export async function POST(request: Request) {
     const uniqueId = crypto.randomUUID();
     const cleanFileName = `${Date.now()}-${uniqueId}${extension}`;
     const uploadDir = path.join(process.cwd(), "public", "uploads");
+    await mkdir(uploadDir, { recursive: true });
     const filePath = path.join(uploadDir, cleanFileName);
 
     await writeFile(filePath, buffer);

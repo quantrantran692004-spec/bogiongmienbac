@@ -106,11 +106,22 @@ export interface ChatConversationItem {
 }
 
 export interface SiteSettingsMap {
-  site_name: string;
-  site_slogan: string;
-  hotline: string;
-  zalo_admin: string;
-  notice_banner: string;
+  site_name?: string;
+  site_slogan?: string;
+  hotline?: string;
+  zalo_admin?: string;
+  notice_banner?: string;
+  email_support?: string;
+  farm_address?: string;
+  hero_title?: string;
+  hero_subtitle?: string;
+  hero_desc?: string;
+  hero_cta_text?: string;
+  hero_cta_link?: string;
+  hero_image_url?: string;
+  footer_about?: string;
+  footer_copyright?: string;
+  [key: string]: string | undefined;
 }
 
 export interface ListingFilterParams {

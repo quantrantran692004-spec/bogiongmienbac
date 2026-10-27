@@ -38,6 +38,9 @@ export default function MediaViewerModal({
   useEffect(() => {
     if (!isOpen) return;
 
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
       if (e.key === "ArrowRight") handleNext();
@@ -45,7 +48,10 @@ export default function MediaViewerModal({
     };
 
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
   }, [isOpen, onClose, handleNext, handlePrev]);
 
   if (!isOpen || media.length === 0) return null;
@@ -53,9 +59,15 @@ export default function MediaViewerModal({
   const currentItem = media[currentIndex];
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/95 flex flex-col justify-between items-center backdrop-blur-md select-none">
+    <div
+      onClick={onClose}
+      className="fixed inset-0 z-50 bg-black/95 flex flex-col justify-between items-center backdrop-blur-md select-none"
+    >
       {/* Thanh công cụ trên cùng */}
-      <div className="w-full max-w-5xl px-4 py-3 flex items-center justify-between text-white z-10">
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-5xl px-4 py-3 flex items-center justify-between text-white z-10"
+      >
         <div className="flex items-center space-x-2">
           <span className="text-sm font-medium bg-white/20 px-3 py-1 rounded-full">
             {currentIndex + 1} / {media.length}
@@ -79,7 +91,10 @@ export default function MediaViewerModal({
         {/* Nút lùi */}
         {media.length > 1 && (
           <button
-            onClick={handlePrev}
+            onClick={(e) => {
+              e.stopPropagation();
+              handlePrev();
+            }}
             className="absolute left-2 sm:left-4 z-20 p-2 sm:p-3 rounded-full bg-black/50 hover:bg-black/75 text-white backdrop-blur-xs transition-all"
             aria-label="Ảnh trước"
           >
@@ -88,7 +103,10 @@ export default function MediaViewerModal({
         )}
 
         {/* Nội dung media */}
-        <div className="relative max-w-full max-h-[80vh] flex items-center justify-center">
+        <div
+          onClick={(e) => e.stopPropagation()}
+          className="relative max-w-full max-h-[80vh] flex items-center justify-center"
+        >
           {currentItem.fileType === "VIDEO" ? (
             <div className="relative rounded-lg overflow-hidden max-w-full max-h-[75vh] bg-black">
               {isPlayingVideo ? (
@@ -129,7 +147,10 @@ export default function MediaViewerModal({
         {/* Nút tiến */}
         {media.length > 1 && (
           <button
-            onClick={handleNext}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleNext();
+            }}
             className="absolute right-2 sm:right-4 z-20 p-2 sm:p-3 rounded-full bg-black/50 hover:bg-black/75 text-white backdrop-blur-xs transition-all"
             aria-label="Ảnh sau"
           >
@@ -140,7 +161,10 @@ export default function MediaViewerModal({
 
       {/* Dải ảnh thu nhỏ (Thumbnails) ở dưới */}
       {media.length > 1 && (
-        <div className="w-full max-w-4xl px-4 py-3 overflow-x-auto flex items-center justify-center space-x-2 scrollbar-thin">
+        <div
+          onClick={(e) => e.stopPropagation()}
+          className="w-full max-w-4xl px-4 py-3 overflow-x-auto flex items-center justify-center space-x-2 scrollbar-thin"
+        >
           {media.map((item, idx) => (
             <button
               key={item.id}

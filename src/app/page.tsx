@@ -40,13 +40,13 @@ const BREED_CATEGORIES = [
     id: "sind",
     name: "Bò Red Sindhi",
     breedQuery: "Bò Sind (Red Sindhi)",
-    imageUrl: "https://images.unsplash.com/photo-1560493676-04071c5f467b?auto=format&fit=crop&w=300&q=80",
+    imageUrl: "https://images.unsplash.com/photo-1596733430284-f7437764b1a9?auto=format&fit=crop&w=300&q=80",
   },
   {
     id: "angus",
     name: "Bò Angus Đen",
     breedQuery: "Bò Angus",
-    imageUrl: "https://images.unsplash.com/photo-1527153857715-3908f2ae5e81?auto=format&fit=crop&w=300&q=80",
+    imageUrl: "https://images.unsplash.com/photo-1570042225831-d98fa7577f1e?auto=format&fit=crop&w=300&q=80",
   },
   {
     id: "lai",
@@ -89,6 +89,16 @@ export default function HomePage() {
   const [error, setError] = useState<string | null>(null);
   const [searchKeyword, setSearchKeyword] = useState("");
   const [selectedBreed, setSelectedBreed] = useState<string>("");
+  const [siteSettings, setSiteSettings] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    fetch("/api/settings")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.settings) setSiteSettings(data.settings);
+      })
+      .catch(() => {});
+  }, []);
 
   const fetchListings = useCallback(async (breed: string = "", search: string = "") => {
     setLoading(true);
@@ -125,8 +135,22 @@ export default function HomePage() {
     setSelectedBreed(breedQuery);
   };
 
+  const heroImage = siteSettings.hero_image_url || "https://images.unsplash.com/photo-1500595046743-cd271d694d30?auto=format&fit=crop&w=1920&q=85";
+  const heroTitle = siteSettings.hero_title || "BÒ GIỐNG CHẤT LƯỢNG";
+  const heroSubtitle = siteSettings.hero_subtitle || "PHÁT TRIỂN BỀN VỮNG";
+  const heroDesc = siteSettings.hero_desc || "Nền tảng kết nối trực tiếp hộ chăn nuôi và trang trại uy tín khắp Ba Vì, Vĩnh Phúc, Bắc Giang, Phú Thọ. Mua bán minh bạch, ảnh thực tế rõ nét, không qua trung gian.";
+  const ctaText = siteSettings.hero_cta_text || "Khám phá ngay";
+  const ctaLink = siteSettings.hero_cta_link || "/danh-sach-bo";
+
   return (
     <div className="bg-stone-50 min-h-screen">
+      {/* Thông báo chạy đầu trang từ Cấu hình quản trị nếu có */}
+      {siteSettings.notice_banner && (
+        <div className="bg-[#056839] text-white text-[11px] sm:text-xs py-1.5 px-4 text-center font-medium">
+          <span>{siteSettings.notice_banner}</span>
+        </div>
+      )}
+
       {/* 1. THANH TÌM KIẾM DẠNG VIÊN THUỐC (PILL SEARCH BAR) - ĐÚNG MẪU 1 */}
       <section className="bg-white border-b border-gray-100 py-3 sm:py-4 shadow-2xs">
         <div className="max-w-4xl mx-auto px-4">
@@ -158,7 +182,7 @@ export default function HomePage() {
           <div
             className="absolute inset-0 bg-cover bg-center"
             style={{
-              backgroundImage: `url('https://images.unsplash.com/photo-1500595046743-cd271d694d30?auto=format&fit=crop&w=1920&q=85')`,
+              backgroundImage: `url('${heroImage}')`,
             }}
           >
             {/* Lớp phủ chuyển sắc để chữ màu trắng nổi bật rõ nét */}
@@ -172,21 +196,20 @@ export default function HomePage() {
             </div>
 
             <h1 className="text-2xl sm:text-4xl md:text-5xl font-black tracking-tight leading-tight mb-3">
-              BÒ GIỐNG CHẤT LƯỢNG <br />
-              <span className="text-amber-400">PHÁT TRIỂN BỀN VỮNG</span>
+              {heroTitle} <br />
+              <span className="text-amber-400">{heroSubtitle}</span>
             </h1>
 
             <p className="text-stone-200 text-xs sm:text-sm md:text-base leading-relaxed mb-6 max-w-xl font-normal">
-              Nền tảng kết nối trực tiếp hộ chăn nuôi và trang trại uy tín khắp Ba Vì, Vĩnh Phúc, Bắc Giang, Phú Thọ.
-              Mua bán minh bạch, ảnh thực tế rõ nét, không qua trung gian.
+              {heroDesc}
             </p>
 
             <div className="flex flex-wrap items-center gap-3">
               <Link
-                href="/danh-sach-bo"
+                href={ctaLink}
                 className="inline-flex items-center space-x-2 bg-[#f59e0b] hover:bg-[#d97706] text-white font-bold text-sm px-6 py-3 rounded-xl shadow-md transition-all hover:scale-102 active:scale-98"
               >
-                <span>Khám phá ngay</span>
+                <span>{ctaText}</span>
                 <ArrowRight className="w-4 h-4 stroke-[2.5]" />
               </Link>
 

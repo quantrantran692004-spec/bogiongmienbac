@@ -145,8 +145,8 @@ async function main() {
       sellerId: seller1.id,
       media: [
         {
-          fileUrl: "https://images.unsplash.com/photo-1527153857715-3908f2ae5e81?auto=format&fit=crop&w=1200&q=80",
-          thumbnailUrl: "https://images.unsplash.com/photo-1527153857715-3908f2ae5e81?auto=format&fit=crop&w=400&q=80",
+          fileUrl: "https://images.unsplash.com/photo-1596733430284-f7437764b1a9?auto=format&fit=crop&w=1200&q=80",
+          thumbnailUrl: "https://images.unsplash.com/photo-1596733430284-f7437764b1a9?auto=format&fit=crop&w=400&q=80",
           fileType: MediaType.IMAGE,
           isCover: true,
           aspectRatio: 1.5,
@@ -171,8 +171,8 @@ async function main() {
       sellerId: admin.id,
       media: [
         {
-          fileUrl: "https://images.unsplash.com/photo-1596733430284-f7437764b14d?auto=format&fit=crop&w=1200&q=80",
-          thumbnailUrl: "https://images.unsplash.com/photo-1596733430284-f7437764b14d?auto=format&fit=crop&w=400&q=80",
+          fileUrl: "https://images.unsplash.com/photo-1570042225831-d98fa7577f1e?auto=format&fit=crop&w=1200&q=80",
+          thumbnailUrl: "https://images.unsplash.com/photo-1570042225831-d98fa7577f1e?auto=format&fit=crop&w=400&q=80",
           fileType: MediaType.IMAGE,
           isCover: true,
           aspectRatio: 1.5,
@@ -197,8 +197,8 @@ async function main() {
       sellerId: seller1.id,
       media: [
         {
-          fileUrl: "https://images.unsplash.com/photo-1560493676-04071c5f467b?auto=format&fit=crop&w=1200&q=80",
-          thumbnailUrl: "https://images.unsplash.com/photo-1560493676-04071c5f467b?auto=format&fit=crop&w=400&q=80",
+          fileUrl: "https://images.unsplash.com/photo-1530595467537-0b5996c41f2d?auto=format&fit=crop&w=1200&q=80",
+          thumbnailUrl: "https://images.unsplash.com/photo-1530595467537-0b5996c41f2d?auto=format&fit=crop&w=400&q=80",
           fileType: MediaType.IMAGE,
           isCover: true,
           aspectRatio: 1.5,

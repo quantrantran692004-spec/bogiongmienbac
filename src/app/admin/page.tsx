@@ -434,77 +434,261 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* TAB CẤU HÌNH HỆ THỐNG */}
+        {/* TAB CẤU HÌNH HỆ THỐNG - ĐẦY ĐỦ 4 NHÓM QUẢN TRỊ BỀN VỮNG */}
         {activeMenu === "SETTINGS" && (
-          <div className="bg-white rounded-3xl border border-gray-100 p-6 sm:p-8 max-w-2xl shadow-2xs space-y-5">
-            <h2 className="text-lg font-black text-gray-900">
-              Cấu Hình Tham Số Website Bò Giống Miền Bắc
-            </h2>
+          <div className="bg-white rounded-3xl border border-gray-100 p-6 sm:p-8 max-w-4xl shadow-2xs space-y-6">
+            <div className="border-b border-gray-100 pb-4">
+              <h2 className="text-xl font-black text-gray-900">
+                Cấu Hình Website Sàn Bò Giống Miền Bắc
+              </h2>
+              <p className="text-xs text-gray-500 mt-1">
+                Các thay đổi được lưu bền vững vào CSDL và tự động cập nhật ngay trên trang chủ, header và footer.
+              </p>
+            </div>
 
             {settingsSuccess && (
-              <div className="p-3 bg-emerald-50 text-[#056839] border border-emerald-200 rounded-xl text-xs font-bold">
-                ✓ Lưu cấu hình thành công!
+              <div className="p-3.5 bg-emerald-50 text-[#056839] border border-emerald-200 rounded-xl text-xs font-bold flex items-center space-x-2">
+                <CheckCircle2 className="w-4 h-4 text-[#056839]" />
+                <span>Đã lưu toàn bộ cấu hình hệ thống thành công vào cơ sở dữ liệu!</span>
               </div>
             )}
 
-            <form onSubmit={handleSaveSettings} className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold text-gray-700 uppercase mb-1">
-                  Tên sàn thương mại
-                </label>
-                <input
-                  type="text"
-                  value={settings.site_name}
-                  onChange={(e) => setSettings({ ...settings, site_name: e.target.value })}
-                  className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-semibold"
-                />
+            <form onSubmit={handleSaveSettings} className="space-y-6">
+              {/* NHÓM 1: THÔNG TIN CHUNG & NHÃN HIỆU */}
+              <div className="space-y-3 p-4 bg-gray-50/70 rounded-2xl border border-gray-100">
+                <h3 className="font-bold text-sm text-[#056839] uppercase tracking-wider">
+                  1. Thông tin chung & Nhãn hiệu
+                </h3>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 mb-1">
+                      Tên sàn thương mại
+                    </label>
+                    <input
+                      type="text"
+                      value={settings.site_name || ""}
+                      onChange={(e) => setSettings({ ...settings, site_name: e.target.value })}
+                      className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-semibold"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 mb-1">
+                      Khẩu hiệu (Slogan)
+                    </label>
+                    <input
+                      type="text"
+                      value={settings.site_slogan || ""}
+                      onChange={(e) => setSettings({ ...settings, site_slogan: e.target.value })}
+                      className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 mb-1">
+                      Email hỗ trợ
+                    </label>
+                    <input
+                      type="email"
+                      value={settings.email_support || ""}
+                      onChange={(e) => setSettings({ ...settings, email_support: e.target.value })}
+                      placeholder="admin@bogiongmienbac.vn"
+                      className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 mb-1">
+                      Địa bàn chính trang trại
+                    </label>
+                    <input
+                      type="text"
+                      value={settings.farm_address || ""}
+                      onChange={(e) => setSettings({ ...settings, farm_address: e.target.value })}
+                      placeholder="Ba Vì, Vĩnh Phúc, Bắc Giang, Phú Thọ"
+                      className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm"
+                    />
+                  </div>
+                </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* NHÓM 2: HERO BANNER & NÚT CTA TRANG CHỦ */}
+              <div className="space-y-3 p-4 bg-gray-50/70 rounded-2xl border border-gray-100">
+                <h3 className="font-bold text-sm text-[#056839] uppercase tracking-wider">
+                  2. Hero Banner & Nút CTA Trang Chủ
+                </h3>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 mb-1">
+                      Tiêu đề lớn dòng 1 (Trắng)
+                    </label>
+                    <input
+                      type="text"
+                      value={settings.hero_title || ""}
+                      onChange={(e) => setSettings({ ...settings, hero_title: e.target.value })}
+                      placeholder="BÒ GIỐNG CHẤT LƯỢNG"
+                      className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-900"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 mb-1">
+                      Tiêu đề phụ dòng 2 (Vàng hổ phách)
+                    </label>
+                    <input
+                      type="text"
+                      value={settings.hero_subtitle || ""}
+                      onChange={(e) => setSettings({ ...settings, hero_subtitle: e.target.value })}
+                      placeholder="PHÁT TRIỂN BỀN VỮNG"
+                      className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-amber-600"
+                    />
+                  </div>
+                </div>
+
                 <div>
-                  <label className="block text-xs font-bold text-gray-700 uppercase mb-1">
-                    Hotline toàn sàn
+                  <label className="block text-xs font-bold text-gray-700 mb-1">
+                    Đoạn mô tả ngắn dưới Banner
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={settings.hero_desc || ""}
+                    onChange={(e) => setSettings({ ...settings, hero_desc: e.target.value })}
+                    className="w-full px-3.5 py-2 bg-white border border-gray-200 rounded-xl text-sm"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 mb-1">
+                      Chữ trên nút CTA
+                    </label>
+                    <input
+                      type="text"
+                      value={settings.hero_cta_text || ""}
+                      onChange={(e) => setSettings({ ...settings, hero_cta_text: e.target.value })}
+                      placeholder="Khám phá ngay"
+                      className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 mb-1">
+                      Đường dẫn nút CTA
+                    </label>
+                    <input
+                      type="text"
+                      value={settings.hero_cta_link || ""}
+                      onChange={(e) => setSettings({ ...settings, hero_cta_link: e.target.value })}
+                      placeholder="/danh-sach-bo"
+                      className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 mb-1">
+                    URL Ảnh nền phong cảnh Banner (Chất lượng cao)
                   </label>
                   <input
                     type="text"
-                    value={settings.hotline}
-                    onChange={(e) => setSettings({ ...settings, hotline: e.target.value })}
-                    className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold text-[#056839]"
+                    value={settings.hero_image_url || ""}
+                    onChange={(e) => setSettings({ ...settings, hero_image_url: e.target.value })}
+                    placeholder="https://images.unsplash.com/..."
+                    className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-xs text-gray-600"
+                  />
+                </div>
+              </div>
+
+              {/* NHÓM 3: LIÊN HỆ & THÔNG BÁO ĐẦU TRANG */}
+              <div className="space-y-3 p-4 bg-gray-50/70 rounded-2xl border border-gray-100">
+                <h3 className="font-bold text-sm text-[#056839] uppercase tracking-wider">
+                  3. Thông tin liên hệ & Banner thông báo
+                </h3>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 mb-1">
+                      Hotline gọi điện
+                    </label>
+                    <input
+                      type="text"
+                      value={settings.hotline || ""}
+                      onChange={(e) => setSettings({ ...settings, hotline: e.target.value })}
+                      className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-[#056839]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 mb-1">
+                      Số Zalo quản trị
+                    </label>
+                    <input
+                      type="text"
+                      value={settings.zalo_admin || ""}
+                      onChange={(e) => setSettings({ ...settings, zalo_admin: e.target.value })}
+                      className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-[#0068ff]"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 mb-1">
+                    Thông báo chạy đầu trang (Notice banner)
+                  </label>
+                  <input
+                    type="text"
+                    value={settings.notice_banner || ""}
+                    onChange={(e) => setSettings({ ...settings, notice_banner: e.target.value })}
+                    className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm"
+                  />
+                </div>
+              </div>
+
+              {/* NHÓM 4: CHÂN TRANG & BẢN QUYỀN */}
+              <div className="space-y-3 p-4 bg-gray-50/70 rounded-2xl border border-gray-100">
+                <h3 className="font-bold text-sm text-[#056839] uppercase tracking-wider">
+                  4. Chân trang (Footer) & Bản quyền
+                </h3>
+
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 mb-1">
+                    Đoạn giới thiệu chân trang
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={settings.footer_about || ""}
+                    onChange={(e) => setSettings({ ...settings, footer_about: e.target.value })}
+                    className="w-full px-3.5 py-2 bg-white border border-gray-200 rounded-xl text-sm"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-gray-700 uppercase mb-1">
-                    Số Zalo quản trị
+                  <label className="block text-xs font-bold text-gray-700 mb-1">
+                    Dòng bản quyền Copyright
                   </label>
                   <input
                     type="text"
-                    value={settings.zalo_admin}
-                    onChange={(e) => setSettings({ ...settings, zalo_admin: e.target.value })}
-                    className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold text-[#0068ff]"
+                    value={settings.footer_copyright || ""}
+                    onChange={(e) => setSettings({ ...settings, footer_copyright: e.target.value })}
+                    className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm"
                   />
                 </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-bold text-gray-700 uppercase mb-1">
-                  Thông báo chạy đầu trang (Banner notice)
-                </label>
-                <input
-                  type="text"
-                  value={settings.notice_banner}
-                  onChange={(e) => setSettings({ ...settings, notice_banner: e.target.value })}
-                  className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm"
-                />
+              <div className="pt-2 flex justify-end">
+                <button
+                  type="submit"
+                  disabled={savingSettings}
+                  className="px-8 py-3 bg-[#056839] hover:bg-[#04522d] text-white font-bold text-sm rounded-xl shadow-sm transition-all hover:shadow active:scale-98 flex items-center space-x-2 disabled:opacity-50"
+                >
+                  <Save className="w-4 h-4" />
+                  <span>{savingSettings ? "Đang lưu cấu hình..." : "Lưu Toàn Bộ Cấu Hình"}</span>
+                </button>
               </div>
-
-              <button
-                type="submit"
-                disabled={savingSettings}
-                className="px-6 py-2.5 bg-[#056839] hover:bg-[#04522d] text-white font-bold text-xs rounded-xl shadow-xs transition-colors"
-              >
-                {savingSettings ? "Đang lưu..." : "Lưu cài đặt"}
-              </button>
             </form>
           </div>
         )}

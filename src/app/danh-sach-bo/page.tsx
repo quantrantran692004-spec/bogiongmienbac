@@ -329,7 +329,7 @@ function ListingContent() {
                 <span className="text-xs text-gray-500 shrink-0">Sắp xếp:</span>
                 <select
                   value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value as any)}
+                  onChange={(e) => setSortBy(e.target.value as "NEWEST" | "PRICE_ASC" | "PRICE_DESC")}
                   className="text-xs bg-gray-50 border border-gray-200 rounded-lg py-1.5 px-2.5 text-gray-800 focus:outline-none focus:border-[#056839] font-medium"
                 >
                   <option value="NEWEST">Mới đăng nhất</option>

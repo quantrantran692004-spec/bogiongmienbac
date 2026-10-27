@@ -27,6 +27,10 @@ export default function ListingCard({
   const [selectedMediaIdx, setSelectedMediaIdx] = useState(0);
 
   const coverMedia = listing.media?.find((m) => m.isCover) || listing.media?.[0];
+  const [imgError, setImgError] = useState(false);
+  const fallbackUrl = "https://images.unsplash.com/photo-1546445317-29f4545e9d53?auto=format&fit=crop&w=1200&q=80";
+  const displayUrl = imgError ? fallbackUrl : (coverMedia?.fileUrl || fallbackUrl);
+
   const hasVideo = listing.media?.some((m) => m.fileType === "VIDEO");
   const mediaCount = listing.media?.length || 0;
 
@@ -39,23 +43,24 @@ export default function ListingCard({
 
   return (
     <>
-      <div className="bg-white rounded-2xl border border-stone-200 shadow-xs hover:shadow-md transition-all overflow-hidden flex flex-col sm:flex-row group">
+      <div className="bg-white rounded-2xl border border-gray-150 shadow-2xs hover:shadow-md transition-all overflow-hidden flex flex-col sm:flex-row group">
         {/* KHỐI ẢNH BÊN TRÁI: Hiển thị trọn vẹn 100% bằng object-contain, không cắt cúp */}
-        <div className="relative w-full sm:w-64 md:w-72 lg:w-80 shrink-0 aspect-[4/3] sm:aspect-auto sm:min-h-[220px] bg-stone-900 overflow-hidden cursor-pointer">
-          {coverMedia ? (
+        <div className="relative w-full sm:w-64 md:w-72 lg:w-80 shrink-0 aspect-[4/3] sm:aspect-auto sm:min-h-[220px] bg-stone-100 overflow-hidden cursor-pointer">
+          {displayUrl ? (
             <>
               {/* Nền mờ tự nhiên từ chính ảnh gốc */}
               <div
-                className="absolute inset-0 bg-cover bg-center filter blur-md scale-110 opacity-35"
-                style={{ backgroundImage: `url(${coverMedia.fileUrl})` }}
+                className="absolute inset-0 bg-cover bg-center filter blur-md scale-110 opacity-20"
+                style={{ backgroundImage: `url(${displayUrl})` }}
                 aria-hidden="true"
               />
 
               {/* Ảnh chính trọn vẹn 100% bằng object-contain */}
               <img
-                src={coverMedia.fileUrl}
+                src={displayUrl}
                 alt={listing.title}
-                className="relative z-10 w-full h-full object-contain group-hover:scale-102 transition-transform duration-300"
+                onError={() => setImgError(true)}
+                className="relative z-10 w-full h-full object-contain p-1 group-hover:scale-102 transition-transform duration-300"
                 onClick={(e) => handleOpenViewer(e, 0)}
                 loading="lazy"
               />
