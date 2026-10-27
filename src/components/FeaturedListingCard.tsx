@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Phone, MessageSquare, MapPin, Scale, Eye, Play } from "lucide-react";
+import { Phone, MessageSquare, MapPin, Scale, Eye, Play, Heart } from "lucide-react";
 import ZaloIcon from "./icons/ZaloIcon";
 import { ListingItem } from "@/types";
 import { formatPriceDisplay, formatWeight, getTelLink, getZaloLink } from "@/lib/format";
@@ -10,11 +10,46 @@ import MediaViewerModal from "./MediaViewerModal";
 
 interface FeaturedListingCardProps {
   listing: ListingItem;
+  initialSaved?: boolean;
 }
 
-export default function FeaturedListingCard({ listing }: FeaturedListingCardProps) {
+export default function FeaturedListingCard({
+  listing,
+  initialSaved = false,
+}: FeaturedListingCardProps) {
   const [isViewerOpen, setIsViewerOpen] = useState(false);
   const [selectedMediaIdx, setSelectedMediaIdx] = useState(0);
+  const [isSaved, setIsSaved] = useState(initialSaved);
+  const [savingFav, setSavingFav] = useState(false);
+
+  const handleToggleFavorite = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (savingFav) return;
+    setSavingFav(true);
+
+    try {
+      if (isSaved) {
+        const res = await fetch(`/api/favorites?listingId=${listing.id}`, { method: "DELETE" });
+        if (res.ok) setIsSaved(false);
+      } else {
+        const res = await fetch("/api/favorites", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ listingId: listing.id }),
+        });
+        if (res.ok) {
+          setIsSaved(true);
+        } else if (res.status === 401) {
+          alert("Vui lòng đăng nhập bằng số điện thoại để lưu tin yêu thích.");
+        }
+      }
+    } catch (err) {
+      console.error("Toggle favorite error:", err);
+    } finally {
+      setSavingFav(false);
+    }
+  };
 
   const coverMedia = listing.media?.find((m) => m.isCover) || listing.media?.[0];
   const [imgError, setImgError] = useState(false);
@@ -89,6 +124,22 @@ export default function FeaturedListingCard({ listing }: FeaturedListingCardProp
                 Đang bán
               </span>
             </div>
+
+            {/* Nút lưu tin yêu thích (Bookmark/Heart) */}
+            <button
+              type="button"
+              onClick={handleToggleFavorite}
+              disabled={savingFav}
+              className={`absolute top-2.5 right-2.5 z-20 p-1.5 rounded-full backdrop-blur-xs transition-all ${
+                isSaved
+                  ? "bg-rose-600 text-white shadow-md shadow-rose-600/30 scale-105"
+                  : "bg-black/40 hover:bg-black/60 text-white"
+              }`}
+              title={isSaved ? "Bỏ lưu tin" : "Lưu tin bán bò"}
+              aria-label={isSaved ? "Bỏ lưu tin" : "Lưu tin bán bò"}
+            >
+              <Heart className={`w-3.5 h-3.5 ${isSaved ? "fill-white" : ""}`} />
+            </button>
 
             {/* Số lượng ảnh */}
             {mediaCount > 0 && (

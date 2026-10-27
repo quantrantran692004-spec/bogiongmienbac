@@ -24,6 +24,10 @@ import {
   LogOut,
   ChevronRight,
   ExternalLink,
+  AlertTriangle,
+  Clock,
+  Check,
+  X,
 } from "lucide-react";
 
 interface AdminStats {
@@ -40,6 +44,12 @@ export default function AdminPage() {
   const [user, setUser] = useState<UserSession | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeMenu, setActiveMenu] = useState<"OVERVIEW" | "LISTINGS" | "SETTINGS">("OVERVIEW");
+  const [listingFilterTab, setListingFilterTab] = useState<"ALL" | "PENDING" | "PUBLIC" | "SOLD">("ALL");
+
+  // State xác nhận xóa tin
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
 
   // Dữ liệu
   const [stats, setStats] = useState<AdminStats | null>(null);
@@ -118,15 +128,66 @@ export default function AdminPage() {
     }
   };
 
-  const handleDeleteListing = async (id: string) => {
-    if (!confirm("Bạn có chắc chắn muốn xóa vĩnh viễn tin bán này?")) return;
+  const handleApproveListing = async (id: string) => {
+    setActionLoadingId(id);
     try {
-      const res = await fetch(`/api/listings/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/admin/listings/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "approve" }),
+      });
       if (res.ok) {
-        setAllListings((prev) => prev.filter((item) => item.id !== id));
+        setAllListings((prev) =>
+          prev.map((item) => (item.id === id ? { ...item, visibility: "PUBLIC" } : item))
+        );
+        loadAdminData();
       }
     } catch (err) {
       console.error(err);
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
+
+  const handleRejectListing = async (id: string) => {
+    setActionLoadingId(id);
+    try {
+      const res = await fetch(`/api/admin/listings/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "reject" }),
+      });
+      if (res.ok) {
+        setAllListings((prev) =>
+          prev.map((item) => (item.id === id ? { ...item, visibility: "PRIVATE" } : item))
+        );
+        loadAdminData();
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
+
+  const handleDeleteListing = (id: string) => {
+    setConfirmDeleteId(id);
+  };
+
+  const executeDeleteListing = async () => {
+    if (!confirmDeleteId) return;
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/admin/listings/${confirmDeleteId}`, { method: "DELETE" });
+      if (res.ok) {
+        setAllListings((prev) => prev.filter((item) => item.id !== confirmDeleteId));
+        loadAdminData();
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setDeleting(false);
+      setConfirmDeleteId(null);
     }
   };
 
@@ -167,7 +228,15 @@ export default function AdminPage() {
     );
   }
 
+  const pendingCount = allListings.filter((l) => l.visibility === "PRIVATE").length;
+  const publicCount = allListings.filter((l) => l.visibility === "PUBLIC" && l.status === "SELLING").length;
+  const soldCount = allListings.filter((l) => l.status === "SOLD").length;
+
   const filteredListings = allListings.filter((item) => {
+    if (listingFilterTab === "PENDING" && item.visibility !== "PRIVATE") return false;
+    if (listingFilterTab === "PUBLIC" && (item.visibility !== "PUBLIC" || item.status !== "SELLING")) return false;
+    if (listingFilterTab === "SOLD" && item.status !== "SOLD") return false;
+
     if (!searchKeyword.trim()) return true;
     const kw = searchKeyword.toLowerCase();
     return (
@@ -316,17 +385,44 @@ export default function AdminPage() {
             <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-2xs">
               <span className="text-[11px] font-bold text-gray-500 uppercase">Tổng số tin</span>
               <div className="text-2xl sm:text-3xl font-black text-gray-900 mt-1">
-                {stats.totalListings}
+                {allListings.length}
               </div>
-              <span className="text-[11px] text-[#056839] font-medium mt-1 block">
-                ● Tự động công khai
+              <span className="text-[11px] text-gray-500 font-medium mt-1 block">
+                Toàn bộ dữ liệu sàn
+              </span>
+            </div>
+
+            <div
+              onClick={() => {
+                setActiveMenu("LISTINGS");
+                setListingFilterTab("PENDING");
+              }}
+              className={`p-5 rounded-2xl border shadow-2xs cursor-pointer transition-all ${
+                pendingCount > 0
+                  ? "bg-amber-50/70 border-amber-300 ring-2 ring-amber-400/20"
+                  : "bg-white border-gray-100"
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold text-amber-800 uppercase">Chờ duyệt</span>
+                {pendingCount > 0 && (
+                  <span className="px-2 py-0.5 rounded-full bg-amber-500 text-white text-[10px] font-bold animate-pulse">
+                    Cần duyệt
+                  </span>
+                )}
+              </div>
+              <div className="text-2xl sm:text-3xl font-black text-amber-900 mt-1">
+                {pendingCount}
+              </div>
+              <span className="text-[11px] text-amber-700 font-medium mt-1 block">
+                {pendingCount > 0 ? "Bấm vào để duyệt ngay →" : "Không có tin tồn đọng"}
               </span>
             </div>
 
             <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-2xs">
-              <span className="text-[11px] font-bold text-emerald-700 uppercase">Tin đang bán</span>
+              <span className="text-[11px] font-bold text-emerald-700 uppercase">Đang công khai</span>
               <div className="text-2xl sm:text-3xl font-black text-emerald-800 mt-1">
-                {stats.publicListings}
+                {publicCount}
               </div>
               <span className="text-[11px] text-gray-500 font-medium mt-1 block">
                 Hiển thị trên trang chủ
@@ -334,22 +430,12 @@ export default function AdminPage() {
             </div>
 
             <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-2xs">
-              <span className="text-[11px] font-bold text-amber-700 uppercase">Người bán / Trại</span>
-              <div className="text-2xl sm:text-3xl font-black text-amber-900 mt-1">
+              <span className="text-[11px] font-bold text-sky-700 uppercase">Người bán & Trại</span>
+              <div className="text-2xl sm:text-3xl font-black text-sky-900 mt-1">
                 {stats.totalSellers}
               </div>
               <span className="text-[11px] text-gray-500 font-medium mt-1 block">
-                Ba Vì, Vĩnh Phúc, Bắc Giang
-              </span>
-            </div>
-
-            <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-2xs">
-              <span className="text-[11px] font-bold text-sky-700 uppercase">Tin nhắn trao đổi</span>
-              <div className="text-2xl sm:text-3xl font-black text-sky-900 mt-1">
-                {stats.totalConversations}
-              </div>
-              <span className="text-[11px] text-gray-500 font-medium mt-1 block">
-                Cuộc gọi & chat trực tiếp
+                Đã tham gia sàn
               </span>
             </div>
           </div>
@@ -405,7 +491,7 @@ export default function AdminPage() {
           <div className="space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <h3 className="font-black text-base text-gray-900">
-                Danh Sách Toàn Bộ Tin Bán Bò ({allListings.length})
+                Danh Sách Quản Lý Tin Bán Bò ({filteredListings.length})
               </h3>
 
               <div className="relative w-full sm:w-72">
@@ -420,17 +506,147 @@ export default function AdminPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-              {filteredListings.map((item) => (
-                <ListingCard
-                  key={item.id}
-                  listing={item}
-                  showAdminActions={true}
-                  onDelete={handleDeleteListing}
-                  onStatusChange={handleStatusChange}
-                />
-              ))}
+            {/* Thanh Tab Bộ Lọc Phân Quyền Trạng Thái */}
+            <div className="flex flex-wrap items-center gap-2 text-xs font-bold bg-white p-2 rounded-2xl border border-gray-100 shadow-2xs">
+              <button
+                type="button"
+                onClick={() => setListingFilterTab("ALL")}
+                className={`px-3 py-1.5 rounded-xl transition-colors ${
+                  listingFilterTab === "ALL"
+                    ? "bg-[#056839] text-white"
+                    : "text-gray-600 hover:bg-gray-100"
+                }`}
+              >
+                Tất cả ({allListings.length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setListingFilterTab("PENDING")}
+                className={`px-3 py-1.5 rounded-xl transition-colors flex items-center space-x-1.5 ${
+                  listingFilterTab === "PENDING"
+                    ? "bg-amber-600 text-white font-bold"
+                    : "text-amber-800 bg-amber-50 hover:bg-amber-100 font-semibold"
+                }`}
+              >
+                <Clock className="w-3.5 h-3.5" />
+                <span>Chờ duyệt ({pendingCount})</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setListingFilterTab("PUBLIC")}
+                className={`px-3 py-1.5 rounded-xl transition-colors ${
+                  listingFilterTab === "PUBLIC"
+                    ? "bg-[#056839] text-white"
+                    : "text-gray-600 hover:bg-gray-100"
+                }`}
+              >
+                Đang công khai ({publicCount})
+              </button>
+              <button
+                type="button"
+                onClick={() => setListingFilterTab("SOLD")}
+                className={`px-3 py-1.5 rounded-xl transition-colors ${
+                  listingFilterTab === "SOLD"
+                    ? "bg-[#056839] text-white"
+                    : "text-gray-600 hover:bg-gray-100"
+                }`}
+              >
+                Đã bán ({soldCount})
+              </button>
             </div>
+
+            {/* Cảnh báo tin chờ duyệt */}
+            {pendingCount > 0 && listingFilterTab !== "PENDING" && (
+              <div className="bg-amber-50 border border-amber-200 rounded-2xl p-3.5 flex items-center justify-between gap-3 text-xs text-amber-900">
+                <div className="flex items-center space-x-2">
+                  <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+                  <span>
+                    Có <strong>{pendingCount}</strong> tin đăng mới từ người nuôi đang ở trạng thái riêng tư chờ quản trị viên duyệt hiển thị công khai.
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setListingFilterTab("PENDING")}
+                  className="px-3 py-1 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg shrink-0 transition-colors"
+                >
+                  Xem ngay
+                </button>
+              </div>
+            )}
+
+            {filteredListings.length === 0 ? (
+              <div className="bg-white rounded-3xl border border-gray-100 p-10 text-center shadow-2xs">
+                <p className="text-xs text-gray-500">Không có tin đăng nào phù hợp với bộ lọc hiện tại.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                {filteredListings.map((item) => (
+                  <div
+                    key={item.id}
+                    className="bg-white rounded-2xl border border-gray-100 shadow-2xs overflow-hidden flex flex-col justify-between"
+                  >
+                    <ListingCard
+                      listing={item}
+                      showAdminActions={true}
+                      onDelete={handleDeleteListing}
+                      onStatusChange={handleStatusChange}
+                    />
+
+                    {/* Action Bar Duyệt Tin Dành Riêng Cho Quản Trị Viên */}
+                    {item.visibility === "PRIVATE" ? (
+                      <div className="bg-amber-50/90 border-t border-amber-200 p-3 flex flex-wrap items-center justify-between gap-2 text-xs">
+                        <div className="flex items-center space-x-1.5 text-amber-800 font-bold">
+                          <Clock className="w-4 h-4 text-amber-600" />
+                          <span>Tin người bán • Đang chờ duyệt</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <button
+                            type="button"
+                            disabled={actionLoadingId === item.id}
+                            onClick={() => handleApproveListing(item.id)}
+                            className="px-3 py-1.5 bg-[#056839] hover:bg-[#04522d] text-white font-bold rounded-xl shadow-xs flex items-center space-x-1 disabled:opacity-50 transition-colors"
+                          >
+                            <Check className="w-3.5 h-3.5" />
+                            <span>Duyệt công khai</span>
+                          </button>
+                          <button
+                            type="button"
+                            disabled={actionLoadingId === item.id}
+                            onClick={() => handleDeleteListing(item.id)}
+                            className="px-2.5 py-1.5 text-rose-600 hover:bg-rose-100 font-semibold rounded-xl transition-colors"
+                          >
+                            Từ chối / Xóa
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="bg-emerald-50/40 border-t border-gray-100 px-4 py-2 flex items-center justify-between text-xs">
+                        <span className="text-emerald-700 font-bold flex items-center space-x-1.5">
+                          <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse"></span>
+                          <span>Đang công khai trên trang chủ</span>
+                        </span>
+                        <div className="flex items-center space-x-3">
+                          <button
+                            type="button"
+                            disabled={actionLoadingId === item.id}
+                            onClick={() => handleRejectListing(item.id)}
+                            className="text-gray-500 hover:text-amber-700 font-medium transition-colors"
+                          >
+                            Tạm ẩn tin
+                          </button>
+                          <Link
+                            href={`/listing/${item.id}`}
+                            className="text-[#056839] font-bold hover:underline"
+                          >
+                            Xem tin
+                          </Link>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
@@ -693,6 +909,48 @@ export default function AdminPage() {
           </div>
         )}
       </main>
+
+      {/* MODAL XÁC NHẬN XÓA TIN AN TOÀN CHO QUẢN TRỊ VIÊN */}
+      {confirmDeleteId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-gray-100 space-y-4">
+            <div className="w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto">
+              <AlertTriangle className="w-6 h-6" />
+            </div>
+            <div className="text-center space-y-2">
+              <h3 className="text-base font-black text-gray-900">Quản trị viên: Xóa vĩnh viễn tin bán?</h3>
+              <p className="text-xs text-gray-500 leading-relaxed">
+                Hành động này sẽ xóa vĩnh viễn tin đăng này khỏi cơ sở dữ liệu hệ thống cùng toàn bộ hình ảnh và lịch sử giá liên quan. Thao tác không thể hoàn tác.
+              </p>
+            </div>
+            <div className="grid grid-cols-2 gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setConfirmDeleteId(null)}
+                disabled={deleting}
+                className="w-full py-2.5 rounded-xl border border-gray-200 text-gray-700 text-xs font-bold hover:bg-gray-50 transition-colors"
+              >
+                Hủy bỏ
+              </button>
+              <button
+                type="button"
+                onClick={executeDeleteListing}
+                disabled={deleting}
+                className="w-full py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-xs transition-colors disabled:opacity-50 flex items-center justify-center space-x-1"
+              >
+                {deleting ? (
+                  <span>Đang xóa...</span>
+                ) : (
+                  <>
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Xác nhận xóa</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

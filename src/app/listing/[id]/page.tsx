@@ -24,6 +24,7 @@ import {
   ChevronRight,
   Star,
   Clock,
+  Heart,
 } from "lucide-react";
 
 export default function ListingDetailPage({
@@ -40,6 +41,8 @@ export default function ListingDetailPage({
   const [selectedMediaIdx, setSelectedMediaIdx] = useState(0);
   const [isViewerOpen, setIsViewerOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
+  const [savingFav, setSavingFav] = useState(false);
 
   useEffect(() => {
     fetch(`/api/listings/${listingId}`)
@@ -57,7 +60,43 @@ export default function ListingDetailPage({
         setError(err instanceof Error ? err.message : "Đã có lỗi xảy ra");
       })
       .finally(() => setLoading(false));
+
+    // Kiểm tra trạng thái đã lưu tin
+    fetch("/api/favorites?idsOnly=true")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data?.savedListingIds?.includes(listingId)) {
+          setIsSaved(true);
+        }
+      })
+      .catch(() => {});
   }, [listingId]);
+
+  const handleToggleFavorite = async () => {
+    if (savingFav) return;
+    setSavingFav(true);
+    try {
+      if (isSaved) {
+        const res = await fetch(`/api/favorites?listingId=${listingId}`, { method: "DELETE" });
+        if (res.ok) setIsSaved(false);
+      } else {
+        const res = await fetch("/api/favorites", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ listingId }),
+        });
+        if (res.ok) {
+          setIsSaved(true);
+        } else if (res.status === 401) {
+          alert("Vui lòng đăng nhập bằng số điện thoại để lưu tin yêu thích.");
+        }
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setSavingFav(false);
+    }
+  };
 
   const handleShare = () => {
     if (navigator.share) {
@@ -129,14 +168,30 @@ export default function ListingDetailPage({
             <span className="text-gray-900 font-bold truncate max-w-xs">{listing.breed}</span>
           </div>
 
-          <button
-            type="button"
-            onClick={handleShare}
-            className="inline-flex items-center space-x-1.5 text-xs font-semibold bg-white border border-gray-200 px-3 py-1.5 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors shadow-2xs"
-          >
-            <Share2 className="w-3.5 h-3.5 text-gray-500" />
-            <span>{copied ? "Đã chép link!" : "Chia sẻ tin"}</span>
-          </button>
+          <div className="flex items-center space-x-2">
+            <button
+              type="button"
+              onClick={handleToggleFavorite}
+              disabled={savingFav}
+              className={`inline-flex items-center space-x-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border transition-all ${
+                isSaved
+                  ? "bg-rose-50 border-rose-200 text-rose-600 shadow-2xs"
+                  : "bg-white border-gray-200 text-gray-700 hover:bg-gray-50 shadow-2xs"
+              }`}
+            >
+              <Heart className={`w-3.5 h-3.5 ${isSaved ? "fill-rose-600 text-rose-600" : "text-gray-500"}`} />
+              <span>{isSaved ? "Đã lưu tin" : "Lưu tin"}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleShare}
+              className="inline-flex items-center space-x-1.5 text-xs font-semibold bg-white border border-gray-200 px-3 py-1.5 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors shadow-2xs"
+            >
+              <Share2 className="w-3.5 h-3.5 text-gray-500" />
+              <span>{copied ? "Đã chép link!" : "Chia sẻ tin"}</span>
+            </button>
+          </div>
         </div>
 
         {/* BỐ CỤC 2 CỘT CHUẨN MÀN 3 */}
@@ -331,9 +386,19 @@ export default function ListingDetailPage({
                 <span className="bg-amber-100 text-amber-900 font-bold text-xs px-2.5 py-0.5 rounded-md">
                   {listing.breed}
                 </span>
-                <span className="bg-emerald-100 text-[#056839] font-bold text-xs px-2.5 py-0.5 rounded-md">
-                  Đang bán
-                </span>
+                {listing.visibility === "PRIVATE" ? (
+                  <span className="bg-rose-700 text-white font-bold text-xs px-2.5 py-0.5 rounded-md">
+                    Chờ duyệt
+                  </span>
+                ) : listing.status === "SOLD" ? (
+                  <span className="bg-stone-800 text-white font-bold text-xs px-2.5 py-0.5 rounded-md">
+                    Đã bán
+                  </span>
+                ) : (
+                  <span className="bg-emerald-100 text-[#056839] font-bold text-xs px-2.5 py-0.5 rounded-md">
+                    Đang bán
+                  </span>
+                )}
               </div>
 
               <h1 className="text-xl font-black text-gray-900 leading-snug">
@@ -343,7 +408,7 @@ export default function ListingDetailPage({
               {/* VÙNG GIÁ BÁN MÀU ĐỎ NỔI BẬT ĐÚNG MÀN 3 */}
               <div className="bg-red-50/70 border border-red-200/80 rounded-2xl p-4">
                 <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wider block mb-1">
-                  Giá bán công khai
+                  {listing.createdByAdmin ? "Giá bán công khai" : "Giá tham khảo"}
                 </span>
                 <div className="text-2xl sm:text-3xl font-black text-[#d92d20]">
                   {formatPriceDisplay(listing.priceAmount, listing.priceType)}

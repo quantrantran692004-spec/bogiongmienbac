@@ -49,6 +49,7 @@ model User {
   sellerConversations ChatConversation[] @relation("SellerConversations")
   messages            ChatMessage[]
   priceChanges        PriceHistory[]
+  savedListings       SavedListing[]
 }
 
 model Listing {
@@ -76,6 +77,7 @@ model Listing {
   media          ListingMedia[]
   priceHistories PriceHistory[]
   conversations  ChatConversation[]
+  savedBy        SavedListing[]
 
   @@index([visibility, status])
   @@index([breed])
@@ -149,4 +151,17 @@ model SiteSetting {
   key       String   @id
   value     String
   updatedAt DateTime @updatedAt
+}
+
+model SavedListing {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  listingId String
+  listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, listingId])
+  @@index([userId])
+  @@index([listingId])
 }

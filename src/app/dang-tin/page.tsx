@@ -96,6 +96,8 @@ export default function DangTinPage() {
   const [formError, setFormError] = useState<string | null>(null);
   const [successId, setSuccessId] = useState<string | null>(null);
 
+  const [createdVisibility, setCreatedVisibility] = useState<"PUBLIC" | "PRIVATE">("PRIVATE");
+
   useEffect(() => {
     fetch("/api/auth/me")
       .then((res) => res.json())
@@ -223,17 +225,27 @@ export default function DangTinPage() {
 
   const validateStep1 = () => {
     setFormError(null);
-    if (!title.trim()) {
-      setFormError("Vui lòng nhập tiêu đề tin bán bò.");
+    if (!title.trim() || title.trim().length < 5) {
+      setFormError("Tiêu đề tin bán bò phải có ít nhất 5 ký tự.");
       return false;
     }
     if (!province) {
-      setFormError("Vui lòng chọn Tỉnh / Thành phố.");
+      setFormError("Vui lòng chọn Tỉnh / Thành phố nơi nuôi đàn bò.");
       return false;
     }
-    if (!user && !sellerPhone.trim()) {
-      setFormError("Vui lòng nhập số điện thoại liên hệ của bạn.");
-      return false;
+    if (priceType !== "NEGOTIABLE") {
+      const cleanPrice = parseFloat(priceAmount.replace(/\D/g, ""));
+      if (isNaN(cleanPrice) || cleanPrice <= 0) {
+        setFormError("Vui lòng nhập mức giá bán hợp lệ hoặc chọn 'Giá thương lượng / Liên hệ'.");
+        return false;
+      }
+    }
+    if (!user) {
+      const cleanPhone = sellerPhone.replace(/\s+/g, "");
+      if (!cleanPhone || !/^0\d{9}$/.test(cleanPhone)) {
+        setFormError("Vui lòng nhập số điện thoại hợp lệ của bạn (10 chữ số, ví dụ 0912345678).");
+        return false;
+      }
     }
     return true;
   };
@@ -242,12 +254,12 @@ export default function DangTinPage() {
     setFormError(null);
     const hasUploading = mediaList.some((m) => m.status === "uploading");
     if (hasUploading) {
-      setFormError("Ảnh/video đang tải lên, vui lòng chờ trong giây lát.");
+      setFormError("Ảnh/video đang tải lên máy chủ, vui lòng chờ trong giây lát.");
       return false;
     }
     const successfulMedia = mediaList.filter((m) => m.status === "success" && m.uploadedUrl);
     if (successfulMedia.length === 0) {
-      setFormError("Vui lòng tải lên ít nhất 1 ảnh đàn bò thực tế.");
+      setFormError("Vui lòng tải lên ít nhất 1 hình ảnh đàn bò thực tế rõ nét.");
       return false;
     }
     return true;
@@ -285,7 +297,6 @@ export default function DangTinPage() {
         province,
         district: district.trim() || undefined,
         description: description.trim() || undefined,
-        visibility: "PUBLIC", // Luôn công khai ngay không cần admin duyệt
         media: successfulMedia,
         phone: !user ? sellerPhone.trim() : undefined,
         fullName: !user ? sellerName.trim() : undefined,
@@ -301,6 +312,7 @@ export default function DangTinPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Không thể đăng tin");
 
+      setCreatedVisibility(data.listing.visibility || "PRIVATE");
       setSuccessId(data.listing.id);
     } catch (err: unknown) {
       setFormError(err instanceof Error ? err.message : "Đã có lỗi xảy ra");
@@ -310,29 +322,40 @@ export default function DangTinPage() {
   };
 
   if (successId) {
+    const isPublic = createdVisibility === "PUBLIC";
+
     return (
       <div className="max-w-2xl mx-auto px-4 py-16">
         <div className="bg-white rounded-3xl border border-gray-100 p-8 sm:p-12 text-center shadow-xs space-y-5">
-          <div className="w-20 h-20 rounded-full bg-emerald-100 text-[#056839] flex items-center justify-center text-4xl mx-auto shadow-sm">
+          <div
+            className={`w-20 h-20 rounded-full flex items-center justify-center text-4xl mx-auto shadow-sm ${
+              isPublic
+                ? "bg-emerald-100 text-[#056839]"
+                : "bg-amber-100 text-amber-700"
+            }`}
+          >
             <Check className="w-10 h-10 stroke-[3]" />
           </div>
 
           <h2 className="text-2xl font-black text-gray-900">
-            Đăng Tin Bán Bò Thành Công!
+            {isPublic ? "Đăng Tin Bán Bò Thành Công!" : "Tiếp Nhận Tin Đăng Thành Công!"}
           </h2>
 
           <p className="text-gray-600 text-sm max-w-md mx-auto leading-relaxed">
-            Tin bán bò của bạn đã được công khai trực tiếp ngay trên trang chủ. Người mua có thể tìm kiếm, gọi điện và nhắn tin trao đổi với bạn ngay lập tức!
+            {isPublic
+              ? "Tin bán bò của bạn đã được công khai trực tiếp ngay trên trang chủ. Người mua có thể tìm kiếm, gọi điện và nhắn tin trao đổi với bạn ngay lập tức!"
+              : "Tin bán bò của bạn đã được gửi tới Ban Quản Trị để kiểm duyệt nhằm đảm bảo tính minh bạch và an toàn giao dịch. Quản trị viên sẽ xem xét và kích hoạt hiển thị công khai sớm nhất."}
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
             <Link
-              href={`/listing/${successId}`}
+              href={isPublic ? `/listing/${successId}` : "/tai-khoan"}
               className="px-6 py-3 bg-[#056839] hover:bg-[#04522d] text-white font-bold text-sm rounded-xl shadow-xs transition-colors"
             >
-              Xem tin vừa đăng
+              {isPublic ? "Xem tin vừa đăng" : "Theo dõi trong Quản lý tài khoản"}
             </Link>
             <button
+              type="button"
               onClick={() => {
                 setSuccessId(null);
                 setCurrentStep(1);
@@ -523,7 +546,7 @@ export default function DangTinPage() {
                   </label>
                   <select
                     value={priceType}
-                    onChange={(e) => setPriceType(e.target.value as any)}
+                    onChange={(e) => setPriceType(e.target.value as "PER_HEAD" | "PER_HERD" | "NEGOTIABLE")}
                     className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium"
                   >
                     <option value="PER_HEAD">Bán theo con (VNĐ / con)</option>
@@ -740,15 +763,27 @@ export default function DangTinPage() {
           {/* BƯỚC 3: HOÀN TẤT & XEM LẠI */}
           {currentStep === 3 && (
             <div className="space-y-6">
-              <div className="bg-emerald-50/70 border border-emerald-200 p-4 rounded-2xl flex items-center space-x-3">
-                <CheckCircle2 className="w-6 h-6 text-[#056839] shrink-0" />
-                <div>
-                  <h4 className="font-bold text-sm text-gray-900">Sẵn Sàng Công Khai Ngay Lập Tức</h4>
-                  <p className="text-xs text-gray-600">
-                    Tin đăng của bạn sẽ xuất hiện trực tiếp trên sàn Bò Giống Miền Bắc mà không cần chờ duyệt.
-                  </p>
+              {user?.role === "ADMIN" ? (
+                <div className="bg-emerald-50/70 border border-emerald-200 p-4 rounded-2xl flex items-center space-x-3">
+                  <CheckCircle2 className="w-6 h-6 text-[#056839] shrink-0" />
+                  <div>
+                    <h4 className="font-bold text-sm text-gray-900">Đăng tin với quyền Quản Trị Viên</h4>
+                    <p className="text-xs text-gray-600">
+                      Tin đăng của bạn sẽ tự động xuất hiện công khai trên sàn Bò Giống Miền Bắc ngay lập tức.
+                    </p>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div className="bg-amber-50/80 border border-amber-200 p-4 rounded-2xl flex items-center space-x-3">
+                  <Info className="w-6 h-6 text-amber-700 shrink-0" />
+                  <div>
+                    <h4 className="font-bold text-sm text-gray-900">Gửi tin đăng tới Ban Quản Trị kiểm duyệt</h4>
+                    <p className="text-xs text-gray-600">
+                      Để bảo vệ quyền lợi người mua và người bán, tin đăng của bạn sẽ được Ban Quản Trị rà soát và duyệt hiển thị công khai trên sàn trong thời gian sớm nhất.
+                    </p>
+                  </div>
+                </div>
+              )}
 
               {/* Bản xem trước tóm tắt */}
               <div className="border border-gray-200 rounded-2xl p-5 space-y-3 bg-white">
@@ -791,7 +826,7 @@ export default function DangTinPage() {
             {currentStep > 1 ? (
               <button
                 type="button"
-                onClick={() => setCurrentStep((prev) => (prev - 1) as any)}
+                onClick={() => setCurrentStep((prev) => (prev - 1 === 1 ? 1 : 2))}
                 className="inline-flex items-center space-x-1.5 px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-xl transition-colors"
               >
                 <ChevronLeft className="w-4 h-4" />
@@ -826,7 +861,7 @@ export default function DangTinPage() {
                   ) : (
                     <>
                       <Check className="w-4 h-4 stroke-[3]" />
-                      <span>Xác nhận đăng tin</span>
+                      <span>{user?.role === "ADMIN" ? "Xác nhận đăng tin công khai" : "Gửi tin tới Ban Quản Trị"}</span>
                     </>
                   )}
                 </button>

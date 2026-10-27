@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Phone, MessageSquare, MapPin, Scale, Eye, Play, Clock, Calendar } from "lucide-react";
+import { Phone, MessageSquare, MapPin, Scale, Eye, Play, Clock, Calendar, Heart } from "lucide-react";
 import ZaloIcon from "./icons/ZaloIcon";
 import { ListingItem } from "@/types";
 import { formatPriceDisplay, formatWeight, getTelLink, getZaloLink, formatRelativeTime } from "@/lib/format";
@@ -11,6 +11,8 @@ import MediaViewerModal from "./MediaViewerModal";
 interface ListingCardProps {
   listing: ListingItem;
   showAdminActions?: boolean;
+  initialSaved?: boolean;
+  onSavedChange?: (saved: boolean) => void;
   onApprove?: (id: string) => void;
   onDelete?: (id: string) => void;
   onStatusChange?: (id: string, status: "SELLING" | "SOLD" | "HIDDEN") => void;
@@ -19,12 +21,49 @@ interface ListingCardProps {
 export default function ListingCard({
   listing,
   showAdminActions = false,
+  initialSaved = false,
+  onSavedChange,
   onApprove,
   onDelete,
   onStatusChange,
 }: ListingCardProps) {
   const [isViewerOpen, setIsViewerOpen] = useState(false);
   const [selectedMediaIdx, setSelectedMediaIdx] = useState(0);
+  const [isSaved, setIsSaved] = useState(initialSaved);
+  const [savingFav, setSavingFav] = useState(false);
+
+  const handleToggleFavorite = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (savingFav) return;
+    setSavingFav(true);
+
+    try {
+      if (isSaved) {
+        const res = await fetch(`/api/favorites?listingId=${listing.id}`, { method: "DELETE" });
+        if (res.ok) {
+          setIsSaved(false);
+          onSavedChange?.(false);
+        }
+      } else {
+        const res = await fetch("/api/favorites", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ listingId: listing.id }),
+        });
+        if (res.ok) {
+          setIsSaved(true);
+          onSavedChange?.(true);
+        } else if (res.status === 401) {
+          alert("Vui lòng đăng nhập bằng số điện thoại để lưu tin yêu thích.");
+        }
+      }
+    } catch (err) {
+      console.error("Toggle favorite error:", err);
+    } finally {
+      setSavingFav(false);
+    }
+  };
 
   const coverMedia = listing.media?.find((m) => m.isCover) || listing.media?.[0];
   const [imgError, setImgError] = useState(false);
@@ -104,6 +143,22 @@ export default function ListingCard({
             )}
           </div>
 
+          {/* Nút lưu tin yêu thích (Bookmark/Heart) */}
+          <button
+            type="button"
+            onClick={handleToggleFavorite}
+            disabled={savingFav}
+            className={`absolute top-2.5 right-2.5 z-20 p-2 rounded-full backdrop-blur-xs transition-all ${
+              isSaved
+                ? "bg-rose-600 text-white shadow-md shadow-rose-600/30 scale-105"
+                : "bg-black/40 hover:bg-black/60 text-white"
+            }`}
+            title={isSaved ? "Bỏ lưu tin" : "Lưu tin bán bò"}
+            aria-label={isSaved ? "Bỏ lưu tin" : "Lưu tin bán bò"}
+          >
+            <Heart className={`w-4 h-4 ${isSaved ? "fill-white" : ""}`} />
+          </button>
+
           {/* Badge số ảnh & nút xem toàn màn hình */}
           {mediaCount > 0 && (
             <button
@@ -178,7 +233,7 @@ export default function ListingCard({
             <div className="bg-red-50/60 border border-red-100 rounded-xl p-2.5 sm:p-3 mb-3 flex items-baseline justify-between">
               <div>
                 <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wider block">
-                  Giá bán công khai
+                  {listing.createdByAdmin ? "Giá bán công khai" : "Giá tham khảo"}
                 </span>
                 <div className="text-xl sm:text-2xl font-black text-[#d92d20]">
                   {formatPriceDisplay(listing.priceAmount, listing.priceType)}

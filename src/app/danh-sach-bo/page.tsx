@@ -65,7 +65,12 @@ function ListingContent() {
 
   const [listings, setListings] = useState<ListingItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+  const [totalCount, setTotalCount] = useState(0);
+  const [savedIds, setSavedIds] = useState<string[]>([]);
 
   // Filter States
   const [search, setSearch] = useState(searchParams.get("search") || "");
@@ -76,11 +81,33 @@ function ListingContent() {
   const [sortBy, setSortBy] = useState<"NEWEST" | "PRICE_ASC" | "PRICE_DESC">("NEWEST");
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
-  const fetchListings = useCallback(async () => {
-    setLoading(true);
+  // Nạp danh sách tin đã lưu của user
+  useEffect(() => {
+    async function loadFavorites() {
+      try {
+        const res = await fetch("/api/favorites?idsOnly=true");
+        if (res.ok) {
+          const data = await res.json();
+          setSavedIds(data.savedIds || []);
+        }
+      } catch (e) {
+        // Bỏ qua nếu người dùng chưa đăng nhập
+      }
+    }
+    loadFavorites();
+  }, []);
+
+  const fetchListings = useCallback(async (pageNum = 1, isAppend = false) => {
+    if (isAppend) {
+      setLoadingMore(true);
+    } else {
+      setLoading(true);
+    }
     setError(null);
     try {
       const params = new URLSearchParams();
+      params.set("page", String(pageNum));
+      params.set("limit", "12");
       if (search.trim()) params.set("search", search.trim());
       if (selectedBreed !== "Tất cả giống") params.set("breed", selectedBreed);
       if (selectedProvince !== "Tất cả tỉnh thành") params.set("province", selectedProvince);
@@ -105,18 +132,33 @@ function ListingContent() {
         result = [...result].sort((a, b) => (b.priceAmount || 0) - (a.priceAmount || 0));
       }
 
-      setListings(result);
+      setTotalCount(data.total || 0);
+      setHasMore(Boolean(data.hasMore));
+      setPage(data.page || pageNum);
+
+      if (isAppend) {
+        setListings((prev) => [...prev, ...result]);
+      } else {
+        setListings(result);
+      }
     } catch (err: unknown) {
       console.error(err);
       setError(err instanceof Error ? err.message : "Đã có lỗi xảy ra");
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   }, [search, selectedBreed, selectedProvince, selectedPriceIdx, selectedWeightIdx, sortBy]);
 
   useEffect(() => {
-    fetchListings();
+    fetchListings(1, false);
   }, [fetchListings]);
+
+  const handleLoadMore = () => {
+    if (!loadingMore && hasMore) {
+      fetchListings(page + 1, true);
+    }
+  };
 
   const handleResetFilters = () => {
     setSearch("");
@@ -155,7 +197,7 @@ function ListingContent() {
 
             <button
               type="button"
-              onClick={fetchListings}
+              onClick={() => fetchListings(1, false)}
               className="px-6 py-2.5 bg-[#056839] hover:bg-[#04522d] text-white text-sm font-semibold rounded-xl transition-colors shadow-2xs"
             >
               Tìm kiếm
@@ -339,7 +381,7 @@ function ListingContent() {
 
                 <button
                   type="button"
-                  onClick={fetchListings}
+                  onClick={() => fetchListings(1, false)}
                   className="p-1.5 text-gray-500 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
                   title="Làm mới danh sách"
                 >
@@ -355,7 +397,7 @@ function ListingContent() {
                 <div className="flex-1 text-xs sm:text-sm font-medium">{error}</div>
                 <button
                   type="button"
-                  onClick={fetchListings}
+                  onClick={() => fetchListings(1, false)}
                   className="text-xs bg-rose-100 hover:bg-rose-200 text-rose-900 font-bold px-3 py-1.5 rounded-lg"
                 >
                   Thử lại
@@ -387,8 +429,34 @@ function ListingContent() {
             {!loading && listings.length > 0 && (
               <div className="space-y-4">
                 {listings.map((item) => (
-                  <ListingCard key={item.id} listing={item} />
+                  <ListingCard
+                    key={item.id}
+                    listing={item}
+                    initialSaved={savedIds.includes(item.id)}
+                    onSavedChange={(saved: boolean) => {
+                      if (saved) {
+                        setSavedIds((prev) => [...prev, item.id]);
+                      } else {
+                        setSavedIds((prev) => prev.filter((id) => id !== item.id));
+                      }
+                    }}
+                  />
                 ))}
+
+                {/* Nút Xem thêm tin bán bò (Pagination) */}
+                {hasMore && (
+                  <div className="pt-4 text-center">
+                    <button
+                      type="button"
+                      onClick={handleLoadMore}
+                      disabled={loadingMore}
+                      className="px-6 py-3 bg-white hover:bg-emerald-50 border border-emerald-600 text-[#056839] text-xs font-bold rounded-2xl transition-all shadow-2xs hover:shadow-xs flex items-center justify-center space-x-2 mx-auto disabled:opacity-50"
+                    >
+                      <RefreshCw className={`w-3.5 h-3.5 ${loadingMore ? "animate-spin" : ""}`} />
+                      <span>{loadingMore ? "Đang tải thêm tin bán..." : `Xem thêm tin bán bò (${listings.length}/${totalCount})`}</span>
+                    </button>
+                  </div>
+                )}
               </div>
             )}
 

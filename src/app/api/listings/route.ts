@@ -85,20 +85,36 @@ export async function GET(request: Request) {
       ];
     }
 
-    const listings = await prisma.listing.findMany({
-      where,
-      include: {
-        seller: {
-          select: { id: true, phone: true, fullName: true, zaloNumber: true, role: true },
-        },
-        media: {
-          orderBy: { sortOrder: "asc" },
-        },
-      },
-      orderBy: { createdAt: "desc" },
-    });
+    const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
+    const limit = Math.max(1, Math.min(50, parseInt(searchParams.get("limit") || "12", 10)));
+    const skip = (page - 1) * limit;
 
-    return NextResponse.json({ listings });
+    const [total, listings] = await Promise.all([
+      prisma.listing.count({ where }),
+      prisma.listing.findMany({
+        where,
+        include: {
+          seller: {
+            select: { id: true, phone: true, fullName: true, zaloNumber: true, role: true },
+          },
+          media: {
+            orderBy: { sortOrder: "asc" },
+          },
+        },
+        orderBy: { createdAt: "desc" },
+        take: limit,
+        skip,
+      }),
+    ]);
+
+    return NextResponse.json({
+      listings,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+      hasMore: page * limit < total,
+    });
   } catch (error) {
     console.error("Listings GET error:", error);
     return NextResponse.json({ error: "Lỗi tải danh sách tin bán" }, { status: 500 });
@@ -132,8 +148,20 @@ export async function POST(request: Request) {
       }>;
     };
 
-    if (!body.title?.trim() || !body.breed?.trim() || !body.province?.trim()) {
-      return NextResponse.json({ error: "Vui lòng nhập đầy đủ tiêu đề, giống bò và địa chỉ trang trại" }, { status: 400 });
+    if (!body.title?.trim() || body.title.trim().length < 5) {
+      return NextResponse.json({ error: "Tiêu đề tin bán cần ít nhất 5 ký tự rõ ràng" }, { status: 400 });
+    }
+
+    if (!body.breed?.trim()) {
+      return NextResponse.json({ error: "Vui lòng chọn hoặc nhập giống bò" }, { status: 400 });
+    }
+
+    if (!body.province?.trim()) {
+      return NextResponse.json({ error: "Vui lòng chọn tỉnh/thành phố chăn nuôi" }, { status: 400 });
+    }
+
+    if (body.priceType !== "NEGOTIABLE" && (!body.priceAmount || Number(body.priceAmount) <= 0)) {
+      return NextResponse.json({ error: "Vui lòng nhập mức giá bán hợp lệ lớn hơn 0 hoặc chọn 'Giá thương lượng'" }, { status: 400 });
     }
 
     if (!body.media || body.media.length === 0) {
@@ -141,8 +169,9 @@ export async function POST(request: Request) {
     }
 
     const isAdmin = user.role === "ADMIN";
-    // Tin đăng công khai ngay lập tức lên sàn (không cần admin duyệt)
-    const visibility: ListingVisibility = "PUBLIC";
+    // Tin của người dùng thông thường phải ở trạng thái riêng/chờ quản trị xử lý và không được tự ý công khai.
+    // Tin do quản trị viên đăng được công khai trực tiếp theo đúng quyền hạn.
+    const visibility: ListingVisibility = isAdmin ? "PUBLIC" : "PRIVATE";
 
     const slug = generateSlug(body.title);
 
@@ -190,10 +219,14 @@ export async function POST(request: Request) {
       });
     }
 
+    const message = isAdmin
+      ? "Đã đăng tin bán bò công khai thành công lên sàn!"
+      : "Tin bán bò đã được lưu thành công và đang ở trạng thái riêng/chờ Quản trị viên duyệt công khai.";
+
     return NextResponse.json({
       success: true,
       listing,
-      message: "Đã đăng tin bán bò công khai thành công lên sàn!",
+      message,
     });
   } catch (error) {
     console.error("Listing POST error:", error);
